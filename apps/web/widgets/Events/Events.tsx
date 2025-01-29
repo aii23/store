@@ -2,7 +2,6 @@
 
 import {
   ALL_GAME_EVENT_TYPES,
-  GAME_EVENTS,
   getEventType,
   useEventTimer,
   ZkNoidEvent,
@@ -16,6 +15,24 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
+import {
+  IStrapiData,
+  IStrapiImage,
+  IStrapiResponse,
+} from "../../lib/strapi/types";
+import { strapiRequest } from "../../lib/strapi/strapiRequest";
+
+interface IEventData extends IStrapiData {
+  eventStarts: string;
+  eventEnds: string;
+  link?: string;
+  image: IStrapiImage;
+  priority: number;
+}
+
+interface IEventsResponse extends IStrapiResponse {
+  data: IEventData[];
+}
 
 export const EventFilter = ({
   eventType,
@@ -44,21 +61,7 @@ export const EventFilter = ({
   );
 };
 
-export const EventItem = ({
-  headText,
-  description,
-  prizePool,
-  event,
-  image,
-  textColor = "white",
-}: {
-  headText: string;
-  description: string;
-  prizePool?: { text: string; color: "left-accent" | "white" };
-  event: ZkNoidEvent;
-  image: string;
-  textColor?: "white" | "black";
-}) => {
+export const EventItem = ({ event }: { event: ZkNoidEvent }) => {
   const eventCounter = useEventTimer(event);
   const time = eventCounter.startsIn
     ? `${eventCounter.startsIn.days}d ${
@@ -70,34 +73,15 @@ export const EventItem = ({
 
   return (
     <div
-      className={cn(
-        "flex flex-col group relative border ml-[0.781vw] border-left-accent rounded-[0.26vw] min-w-0 flex-[0_0_49.5%]",
-        textColor === "black" ? "text-bg-dark" : "text-foreground",
-      )}
+      className={
+        "flex flex-col group relative border ml-[0.781vw] border-left-accent rounded-[0.26vw] min-w-0 flex-[0_0_49.5%]"
+      }
     >
       <div
         className={
           "h-full flex flex-col p-[1.042vw] gap-[0.521vw] absolute left-0 top-0"
         }
       >
-        <span className={"text-[1.25vw] font-bold font-museo"}>{headText}</span>
-        <span
-          className={"text-[0.833vw] leading-[110%] font-plexsans max-w-[50%]"}
-        >
-          {description}
-        </span>
-        {prizePool && (
-          <span
-            className={cn(
-              "leading-[110%] font-extrabold text-[1.25vw] font-plexsans uppercase",
-              prizePool.color == "left-accent"
-                ? "text-left-accent"
-                : "text-foreground",
-            )}
-          >
-            Prize pool {prizePool.text}
-          </span>
-        )}
         {time.length > 0 && (
           <span className={cn("text-[1.563vw] font-museo font-medium mt-auto")}>
             {eventCounter.type == ZkNoidEventType.UPCOMING_EVENTS && (
@@ -111,9 +95,9 @@ export const EventItem = ({
       </div>
       <div className={"w-full h-full overflow-hidden rounded-[0.13vw]"}>
         <Image
-          src={image}
+          src={`https://res.cloudinary.com/dw4kivbv0/image/upload/w_1600,f_auto,fl_progressive:semi,q_auto:best/v1738156358/${event.imageID}`}
           width={700}
-          height={300}
+          height={700}
           alt={"Event image"}
           className={"w-full h-full object-center object-cover"}
         />
@@ -145,10 +129,12 @@ export const EventItem = ({
           </svg>
         </div>
       </div>
-      <Link
-        href={event.link}
-        className={"absolute left-0 top-0 w-full h-full"}
-      />
+      {event.link && (
+        <Link
+          href={event.link}
+          className={"absolute left-0 top-0 w-full h-full"}
+        />
+      )}
     </div>
   );
 };
@@ -170,23 +156,59 @@ export default function Events({
   });
 
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [gameEvents, setGameEvents] = useState<ZkNoidEvent[]>([]);
 
   const onSelect = useCallback((emblaApi: any) => {
     setSelectedIndex(emblaApi.selectedScrollSnap());
   }, []);
 
-  const filteredEvents = GAME_EVENTS.filter(
-    (x) =>
-      eventTypesSelected.includes(getEventType(x)) ||
-      eventTypesSelected.length == 0 ||
-      x.eventEnds > Date.now(),
-  );
+  useEffect(() => {
+    strapiRequest({
+      pluralApi: "events",
+      populate: true,
+      fetchConfig: { revalidate: 5000 },
+      cache: "force-cache",
+    })
+      .then((response: IEventsResponse) =>
+        setGameEvents(
+          response.data.map((item) => {
+            return {
+              eventStarts: new Date(item.eventStarts).getTime(),
+              eventEnds: new Date(item.eventEnds).getTime(),
+              link: item.link,
+              imageID: item.image.provider_metadata.public_id,
+              priority: item.priority,
+            };
+          }),
+        ),
+      )
+      .catch((err) => console.error("Fetch error: ", err));
+  }, []);
+
+  const filteredEvents = gameEvents
+    .filter(
+      (x) =>
+        eventTypesSelected.includes(getEventType(x)) ||
+        eventTypesSelected.length == 0,
+    )
+    .sort((a, b) => b.priority - a.priority);
 
   useEffect(() => {
-    GAME_EVENTS.filter((x) => x.eventEnds > Date.now()).length == 0
-      ? setEventTypesSelected([ZkNoidEventType.PAST_EVENTS])
-      : setEventTypesSelected([ZkNoidEventType.CURRENT_EVENTS]);
-  }, []);
+    const isCurrentEvent =
+      gameEvents.filter(
+        (item) => item.eventStarts < Date.now() && item.eventEnds > Date.now(),
+      ).length != 0;
+    const isUpcomingEvent =
+      gameEvents.filter((item) => item.eventStarts > Date.now()).length != 0;
+
+    setEventTypesSelected(
+      isCurrentEvent
+        ? [ZkNoidEventType.CURRENT_EVENTS]
+        : isUpcomingEvent
+          ? [ZkNoidEventType.UPCOMING_EVENTS]
+          : [ZkNoidEventType.PAST_EVENTS],
+    );
+  }, [gameEvents]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -227,16 +249,8 @@ export default function Events({
       {filteredEvents.length > 0 && (
         <div className="w-full overflow-hidden" ref={emblaRef}>
           <div className={"flex flex-row w-full"}>
-            {filteredEvents.map((event) => (
-              <EventItem
-                key={event.name}
-                headText={event.name}
-                description={event.description}
-                prizePool={event.prizePool}
-                event={event}
-                image={event.image}
-                textColor={event.textColor}
-              />
+            {filteredEvents.map((event, index) => (
+              <EventItem key={index} event={event} />
             ))}
           </div>
         </div>
