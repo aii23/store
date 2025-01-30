@@ -12,7 +12,7 @@ export async function strapiRequest({
   cache?: RequestCache;
 }) {
   const response = await fetch(
-    `${process.env.STRAPI_URL}${pluralApi}${populate && "?populate=*"}`,
+    `${process.env.STRAPI_URL}${pluralApi}${populate ? "?populate=*" : ""}`,
     {
       method: "GET",
       headers: {

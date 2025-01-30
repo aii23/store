@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@zknoid/sdk/lib/helpers";
-import { ReactNode } from "react";
+import Markdown from "react-markdown";
+import Link from "next/link";
 
 export default function FaqAccordion({
   isOpen,
@@ -11,7 +12,7 @@ export default function FaqAccordion({
   isOpen: boolean;
   toggleOpen: () => void;
   title: string;
-  content: ReactNode;
+  content: string;
 }) {
   return (
     <motion.div
@@ -34,9 +35,32 @@ export default function FaqAccordion({
             animate={{ height: "auto" }}
             exit={{ height: 0 }}
             transition={{ type: "spring", duration: 0.4, bounce: 0 }}
-            className={"flex flex-col gap-[0.521vw] overflow-hidden"}
+            className={
+              "flex flex-col gap-[0.521vw] overflow-hidden font-plexsans text-[0.833vw]"
+            }
           >
-            {content}
+            <Markdown
+              components={{
+                a(props) {
+                  const { href, children, ...rest } = props;
+                  return (
+                    <Link
+                      href={href ? href : "#"}
+                      target={"_blank"}
+                      rel={"noopener noreferrer"}
+                      className={
+                        "underline underline-offset-2 hover:opacity-80 decoration-dotted"
+                      }
+                      {...rest}
+                    >
+                      {children}
+                    </Link>
+                  );
+                },
+              }}
+            >
+              {content}
+            </Markdown>
           </motion.div>
         )}
       </AnimatePresence>
