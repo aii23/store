@@ -166,7 +166,7 @@ export default function Events({
     strapiRequest({
       pluralApi: "events",
       populate: true,
-      fetchConfig: { revalidate: 5000 },
+      fetchConfig: { revalidate: 600 },
       cache: "force-cache",
     })
       .then((response: IEventsResponse) =>

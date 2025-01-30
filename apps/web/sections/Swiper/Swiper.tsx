@@ -64,7 +64,7 @@ const Slides = () => {
     strapiRequest({
       pluralApi: "slides",
       populate: true,
-      fetchConfig: { revalidate: 5000 },
+      fetchConfig: { revalidate: 600 },
       cache: "force-cache",
     })
       .then((response: ISlidesResponse) => setSlides(response.data))

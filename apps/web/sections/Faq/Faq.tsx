@@ -24,6 +24,7 @@ export default function Faq() {
   useEffect(() => {
     strapiRequest({
       pluralApi: "faqs",
+      fetchConfig: { revalidate: 600 },
       cache: "force-cache",
     })
       .then((response: IFaqItemsResponse) => setFaqItems(response.data))
