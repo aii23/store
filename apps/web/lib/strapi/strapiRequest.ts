@@ -4,12 +4,10 @@ export async function strapiRequest({
   pluralApi,
   populate,
   fetchConfig,
-  cache,
 }: {
   pluralApi: string;
   populate?: boolean;
   fetchConfig?: NextFetchRequestConfig;
-  cache?: RequestCache;
 }) {
   const response = await fetch(
     `${process.env.STRAPI_URL}${pluralApi}${populate ? "?populate=*" : ""}`,
@@ -17,9 +15,9 @@ export async function strapiRequest({
       method: "GET",
       headers: {
         Authorization: `Bearer ${process.env.STRAPI_KEY}`,
+        "User-Agent": `${process.env.USER_AGENT}`,
       },
       next: fetchConfig,
-      cache: cache,
     },
   );
 

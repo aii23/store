@@ -167,7 +167,6 @@ export default function Events({
       pluralApi: "events",
       populate: true,
       fetchConfig: { revalidate: 600 },
-      cache: "force-cache",
     })
       .then((response: IEventsResponse) =>
         setGameEvents(

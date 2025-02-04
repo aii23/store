@@ -25,7 +25,6 @@ export default function Faq() {
     strapiRequest({
       pluralApi: "faqs",
       fetchConfig: { revalidate: 600 },
-      cache: "force-cache",
     })
       .then((response: IFaqItemsResponse) => setFaqItems(response.data))
       .catch((err) => console.error(err));

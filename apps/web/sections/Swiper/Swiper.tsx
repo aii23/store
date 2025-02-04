@@ -65,7 +65,6 @@ const Slides = () => {
       pluralApi: "slides",
       populate: true,
       fetchConfig: { revalidate: 600 },
-      cache: "force-cache",
     })
       .then((response: ISlidesResponse) => setSlides(response.data))
       .catch((err) => console.error("Fetch error: ", err));
