@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { algoliasearch, Hit } from "algoliasearch";
 import { AnyNFTItem, NFTCollectionIDList } from "../../lib/types/nftTypes";
+import Link from "next/link";
 
 const algoliaClient = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_PROJECT || "",
@@ -64,8 +65,6 @@ export default function Page() {
       });
   }, [collectionID, gridMode, page]);
 
-  console.log(collectionItems);
-
   return (
     <div className={"w-full"}>
       <div className={"relative w-full h-[117.647vw] lg:!h-[20.833vw]"}>
@@ -86,7 +85,8 @@ export default function Page() {
           }
         >
           <div className={"flex items-start justify-end h-full w-full"}>
-            <div
+            <Link
+              href={"/nft/info"}
               className={
                 "flex flex-row items-center lg:!gap-[0.521vw] lg:!p-[0.521vw] lg:!rounded-[0.521vw] backdrop-blur-[20px] bg-foreground/10"
               }
@@ -112,7 +112,7 @@ export default function Page() {
                   fill="#252525"
                 />
               </svg>
-            </div>
+            </Link>
           </div>
           <div
             className={"w-full h-full flex flex-row justify-between items-end"}
