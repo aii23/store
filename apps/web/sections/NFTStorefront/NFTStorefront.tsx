@@ -11,14 +11,24 @@ import {
 } from "../../../../packages/sdk/components/shared/Select/Select";
 import { cn } from "@zknoid/sdk/lib/helpers";
 import Image from "next/image";
-import { NFT, NFTCollectionIDList } from "../../lib/types/nftTypes";
+import { AnyNFTItem, NFTCollectionIDList } from "../../lib/types/nftTypes";
+import NFTDetailsModal from "../../widgets/NFTDetailsModal";
+import { useState } from "react";
 
 enum PriceFilter {
   LowToHigh = "low-to-high",
   HighToLow = "high-to-low",
 }
 
-const NFTItem = ({ gridMode, nft }: { gridMode: number; nft: NFT }) => {
+function NFTItem({
+  gridMode,
+  nft,
+  setChoosenID,
+}: {
+  gridMode: number;
+  nft: AnyNFTItem;
+  setChoosenID: (id: number) => void;
+}) {
   return (
     <div
       className={cn(
@@ -30,13 +40,18 @@ const NFTItem = ({ gridMode, nft }: { gridMode: number; nft: NFT }) => {
             : "lg:!w-[9.896vw] lg:!h-[16.6vw]",
       )}
     >
-      <Image
-        src={`https://res.cloudinary.com/dw4kivbv0/image/upload/w_1000,f_auto,q_auto:best/v1/${nft.imageID}`}
-        alt={`${nft.collectionID} + ${nft} NFT`}
-        className={"w-full h-full object-contain object-center"}
-        width={1000}
-        height={1000}
-      />
+      <button
+        onClick={() => setChoosenID(nft.id)}
+        className={"hover:opacity-80 overflow-hidden rounded-[0.26vw]"}
+      >
+        <Image
+          src={`https://res.cloudinary.com/dw4kivbv0/image/upload/w_1000,f_auto,q_auto:best/v1/${nft.imageID}`}
+          alt={`${nft.collectionID} + ${nft} NFT`}
+          className={"w-full h-full object-contain object-center"}
+          width={1000}
+          height={1000}
+        />
+      </button>
       <div className={"p-[0.521vw] flex flex-col gap-[0.521vw]"}>
         <span
           className={cn(
@@ -59,28 +74,44 @@ const NFTItem = ({ gridMode, nft }: { gridMode: number; nft: NFT }) => {
         >
           {nft.price} MINA
         </span>
-        <div
-          className={
-            "bg-left-accent py-[0.417vw] rounded-[0.26vw] flex flex-col items-center justify-center w-full"
-          }
-        >
-          <span
+        {nft.isMinted ? (
+          <div
             className={
-              "font-museo text-bg-grey font-medium text-[1.042vw] leading-[100%]"
+              "py-[0.417vw] flex flex-col items-start justify-center w-full"
             }
           >
-            Buy
-          </span>
-        </div>
+            <span
+              className={
+                "lg:!text-[0.833vw] font-plexsans leading-[110%] text-left-accent"
+              }
+            >
+              Already Minted
+            </span>
+          </div>
+        ) : (
+          <div
+            className={
+              "bg-left-accent cursor-pointer hover:opacity-80 py-[0.417vw] rounded-[0.26vw] flex flex-col items-center justify-center w-full"
+            }
+          >
+            <span
+              className={
+                "font-museo text-bg-grey font-medium text-[1.042vw] leading-[100%]"
+              }
+            >
+              Buy
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
-};
+}
 
 export default function NFTStorefront({
   collectionID,
   setCollectionID,
-  collectionItemsToRender,
+  collectionItems,
   gridMode,
   setGridMode,
   page,
@@ -88,26 +119,32 @@ export default function NFTStorefront({
 }: {
   collectionID: NFTCollectionIDList;
   setCollectionID: (collectionID: NFTCollectionIDList) => void;
-  collectionItemsToRender: NFT[];
+  collectionItems: AnyNFTItem[];
   gridMode: 1 | 4 | 6;
   setGridMode: (gridMode: 1 | 4 | 6) => void;
   page: number;
   setPage: (page: number) => void;
 }) {
+  const [choosenNFTID, setChoosenNFTID] = useState<number | undefined>(
+    undefined,
+  );
   return (
     <section
       className={
         "mx-auto w-[62.5vw] lg:!mt-[2.604vw] lg:!mb-[7.813vw] flex flex-col lg:!gap-[0.781vw]"
       }
     >
-      <div className={"grid grid-cols-12 grid-rows-1 gap-[0.781vw]"}>
+      <div
+        className={"grid grid-rows-1 gap-[0.781vw]"}
+        style={{ gridTemplateColumns: "repeat(16, minmax(0, 1fr))" }}
+      >
         <Select
           value={collectionID}
           onValueChange={(value) =>
             setCollectionID(value as NFTCollectionIDList)
           }
         >
-          <SelectTriggerPick className="col-span-3">
+          <SelectTriggerPick className="col-span-4">
             <span>Collection: </span>
             <SelectValue />
           </SelectTriggerPick>
@@ -119,7 +156,7 @@ export default function NFTStorefront({
         </Select>
         <div
           className={
-            "col-span-5 bg-bg-grey lg:!rounded-[0.521vw] lg:!p-[0.781vw] flex flex-row justify-between items-center lg:!gap-[0.521vw]"
+            "col-span-7 bg-bg-grey lg:!rounded-[0.521vw] lg:!p-[0.781vw] flex flex-row justify-between items-center lg:!gap-[0.521vw]"
           }
         >
           <svg
@@ -155,7 +192,7 @@ export default function NFTStorefront({
           />
         </div>
         <Select defaultValue={PriceFilter.LowToHigh}>
-          <SelectTriggerChevron className="col-span-2">
+          <SelectTriggerChevron className="col-span-3">
             <span>Price: </span>
             <SelectValue />
           </SelectTriggerChevron>
@@ -168,12 +205,12 @@ export default function NFTStorefront({
         </Select>
         <div
           className={
-            "col-span-2 bg-bg-grey lg:!rounded-[0.521vw] lg:!p-[0.21vw] flex flex-row items-center justify-between lg:!gap-[0.26vw] w-full"
+            "col-span-2 bg-bg-grey lg:!rounded-[0.521vw] lg:!p-[0.21vw] flex flex-row items-center justify-center gap-0 w-full"
           }
         >
           <button
             className={
-              "flex flex-col items-center justify-center lg:!p-[0.521vw] hover:bg-[#373737] lg:!rounded-[0.26vw]"
+              "flex flex-col items-center justify-center lg:!p-[0.417vw] hover:bg-[#373737] lg:!rounded-[0.26vw]"
             }
             onClick={() => setGridMode(4)}
           >
@@ -183,7 +220,7 @@ export default function NFTStorefront({
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className={"lg:!w-[1.563vw] lg:!h-[1.563vw]"}
+              className={"lg:!w-[1.25vw] lg:!h-[1.25vw]"}
             >
               <path
                 d="M12 3V21"
@@ -210,7 +247,7 @@ export default function NFTStorefront({
           </button>
           <button
             className={
-              "flex flex-col items-center justify-center lg:!p-[0.521vw] hover:bg-[#373737] lg:!rounded-[0.26vw]"
+              "flex flex-col items-center justify-center lg:!p-[0.417vw] hover:bg-[#373737] lg:!rounded-[0.26vw]"
             }
             onClick={() => setGridMode(6)}
           >
@@ -220,7 +257,7 @@ export default function NFTStorefront({
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className={"lg:!w-[1.563vw] lg:!h-[1.563vw]"}
+              className={"lg:!w-[1.25vw] lg:!h-[1.25vw]"}
             >
               <path
                 d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z"
@@ -261,7 +298,7 @@ export default function NFTStorefront({
           </button>
           <button
             className={
-              "flex flex-col items-center justify-center lg:!p-[0.521vw] hover:bg-[#373737] lg:!rounded-[0.26vw]"
+              "flex flex-col items-center justify-center lg:!p-[0.417vw] hover:bg-[#373737] lg:!rounded-[0.26vw]"
             }
             onClick={() => setGridMode(1)}
           >
@@ -271,7 +308,7 @@ export default function NFTStorefront({
               viewBox="0 0 23 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className={"lg:!w-[1.563vw] lg:!h-[1.563vw]"}
+              className={"lg:!w-[1.25vw] lg:!h-[1.25vw]"}
             >
               <path
                 d="M2.875 12H2.885"
@@ -329,10 +366,23 @@ export default function NFTStorefront({
               : "grid-cols-6",
         )}
       >
-        {collectionItemsToRender.map((item, index) => (
-          <NFTItem key={index} gridMode={gridMode} nft={item} />
+        {collectionItems.map((item, index) => (
+          <NFTItem
+            key={index}
+            gridMode={gridMode}
+            nft={item}
+            setChoosenID={setChoosenNFTID}
+          />
         ))}
       </div>
+      <NFTDetailsModal
+        nft={
+          collectionItems.find((item) => item.id === choosenNFTID) ||
+          collectionItems[0]
+        }
+        isOpen={choosenNFTID != undefined}
+        onClose={() => setChoosenNFTID(undefined)}
+      />
     </section>
   );
 }

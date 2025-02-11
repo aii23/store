@@ -4,7 +4,7 @@ import NFTStorefront from "../../sections/NFTStorefront";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { algoliasearch, Hit } from "algoliasearch";
-import { NFT, NFTCollectionIDList } from "../../lib/types/nftTypes";
+import { AnyNFTItem, NFTCollectionIDList } from "../../lib/types/nftTypes";
 
 const algoliaClient = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_PROJECT || "",
@@ -19,53 +19,52 @@ export default function Page() {
   const [collectionID, setCollectionID] = useState<NFTCollectionIDList>(
     NFTCollectionIDList.Zknoid,
   );
-  const [collectionItems, setCollectionItems] = useState<NFT[]>([]);
-  const [collectionItemsToRender, setCollectionItemsToRender] = useState<NFT[]>(
-    [],
-  );
+  const [collectionItems, setCollectionItems] = useState<AnyNFTItem[]>([]);
   const [gridMode, setGridMode] = useState<1 | 4 | 6>(4);
   const [page, setPage] = useState<number>(1);
 
   useEffect(() => {
+    const itemsPerPage = gridMode == 4 ? 8 : 12;
+    console.log(collectionID);
     algoliaClient
       .searchSingleIndex({
         indexName: "dev_NFT",
         searchParams: {
-          facetFilters: ["collection:-zknoid"],
+          facetFilters: [`collection:-${collectionID}`],
+          hitsPerPage: itemsPerPage,
         },
       })
       .then((resp) => {
         setCollectionItems(
-          resp.hits.map(
-            (value: Hit) =>
-              ({
-                id: value.id,
-                imageID: value.imageID,
-                collectionID: value.collectionID,
-                owner: value.owner,
-                isMinted: value.isMinted,
-                price: value.price,
-                expertise: value.expertise,
-                race: value.race,
-                rating: value.rating,
-                skin: value.skin,
-                edition: value.edition,
-              }) as unknown as NFT,
-          ),
+          resp.hits
+            .map(
+              (value: Hit) =>
+                ({
+                  id: value.id,
+                  imageID: value.imageID,
+                  collectionID: value.collectionID,
+                  owner: value.owner,
+                  isMinted: value.isMinted,
+                  price: value.price,
+                  params: [
+                    // TODO: Replace with value.params
+                    { title: "expertise", value: value.expertise },
+                    { title: "race", value: value.race },
+                    { title: "rating", value: value.rating, amount: "50%" },
+                    { title: "skin", value: value.skin },
+                    { title: "edition", value: value.edition },
+                  ],
+                }) as AnyNFTItem,
+            )
+            .sort((a, b) => a.id - b.id),
         );
       })
       .catch((error) => {
         console.log("Algolia error", error);
       });
-  }, [collectionID]);
+  }, [collectionID, gridMode, page]);
 
-  useEffect(() => {
-    const itemsPerPage = gridMode == 4 ? 8 : 12;
-
-    setCollectionItemsToRender(
-      collectionItems.sort((a, b) => a.id - b.id).slice(0, itemsPerPage),
-    );
-  }, [collectionItems, gridMode, page]);
+  console.log(collectionItems);
 
   return (
     <div className={"w-full"}>
@@ -203,7 +202,7 @@ export default function Page() {
       <NFTStorefront
         collectionID={collectionID}
         setCollectionID={(value) => setCollectionID(value)}
-        collectionItemsToRender={collectionItemsToRender}
+        collectionItems={collectionItems}
         gridMode={gridMode}
         setGridMode={(value) => setGridMode(value)}
         page={page}

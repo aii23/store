@@ -1,0 +1,164 @@
+import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
+import { AnyNFTItem, NFTParam } from "../../lib/types/nftTypes";
+
+const DetailItem = ({ detail }: { detail: NFTParam }) => {
+  return (
+    <div
+      className={
+        "rounded-[0.26vw] bg-[#252525] p-[0.781vw] flex flex-col gap-[0.521vw]"
+      }
+    >
+      <div className={"flex flex-row gap-[0.521vw] items-center"}>
+        <span>
+          {detail.title.charAt(0).toUpperCase() + detail.title.slice(1)}
+        </span>
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 18 18"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-[0.938vw] h-[0.938vw]"
+        >
+          <circle cx="9" cy="9" r="9" fill="#373737" />
+          <path
+            d="M9.672 11.896H8.28L8.168 3.704H9.768L9.672 11.896ZM9.784 15H8.184V13.432H9.784V15Z"
+            fill="#F9F8F4"
+          />
+        </svg>
+      </div>
+      <div className={"flex flex-row gap-[0.781vw] items-center"}>
+        <span
+          className={
+            "text-[0.833vw] text-foreground font-plexsans font-semibold leading-[110%]"
+          }
+        >
+          {detail.value.charAt(0).toUpperCase() + detail.value.slice(1)}
+        </span>
+        <span
+          className={
+            "text-[0.833vw] text-foreground font-plexsans font-semibold leading-[110%]"
+          }
+        >
+          {detail.amount}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+export default function NFTDetailsModal({
+  nft,
+  isOpen,
+  onClose,
+}: {
+  nft: AnyNFTItem;
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ type: "spring", duration: 0.4, bounce: 0 }}
+          className={
+            "fixed left-0 top-0 z-50 flex h-full w-full flex-col items-center justify-center backdrop-blur-md p-[10vw] lg:!p-0"
+          }
+          onClick={() => onClose()}
+        >
+          <div
+            className={
+              "lg:!w-[53.646vw] relative flex flex-row rounded-[0.521vw] bg-[#373737] p-[1.042vw] gap-[0.781vw]"
+            }
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className={
+                "max-w-[23.438vw] w-full h-full rounded-[0.26vw] overflow-hidden"
+              }
+            >
+              <Image
+                src={`https://res.cloudinary.com/dw4kivbv0/image/upload/w_1000,f_auto,q_auto:best/v1/${nft.imageID}`}
+                alt={`${nft.collectionID} + ${nft} NFT`}
+                width={500}
+                height={500}
+                className={"object-center object-cover"}
+              />
+            </div>
+            <div className={"flex flex-col gap-[1.042vw] w-full"}>
+              <div
+                className={"flex flex-row w-full items-center justify-between"}
+              >
+                <div className={"flex flex-col gap-[0.26vw]"}>
+                  <span
+                    className={
+                      "font-museo text-[1.25vw] font-bold text-foreground"
+                    }
+                  >
+                    {nft.collectionID.charAt(0).toUpperCase() +
+                      nft.collectionID.slice(1)}{" "}
+                    {nft.id < 100 ? "00" + nft.id : "0" + nft.id}
+                  </span>
+                  <span
+                    className={
+                      "text-foreground font-museo text-[1.042vw] font-medium"
+                    }
+                  >
+                    Price: {nft.price} MINA
+                  </span>
+                </div>
+                <div
+                  className={
+                    "bg-[#252525] rounded-[0.26vw] gap-[0.521vw] flex flex-row items-center justify-center py-[0.521vw] px-[2.969vw]"
+                  }
+                >
+                  <span
+                    className={"text-[0.833vw] font-plexsans leading-[100%]"}
+                  >
+                    Traits Info
+                  </span>
+                  <svg
+                    width="15"
+                    height="16"
+                    viewBox="0 0 15 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={"w-[0.833vw] h-[0.833vw]"}
+                  >
+                    <circle cx="7.5" cy="8" r="7.5" fill="#F9F8F4" />
+                    <path
+                      d="M8.0626 10.4133H6.9026L6.80927 3.58667H8.1426L8.0626 10.4133ZM8.15594 13H6.8226V11.6933H8.15594V13Z"
+                      fill="#252525"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div className={"grid grid-cols-2 gap-[0.781vw]"}>
+                {nft.params.map((item, index) => {
+                  return <DetailItem key={index} detail={item} />;
+                })}
+              </div>
+              <div
+                className={
+                  "mt-auto bg-left-accent cursor-pointer hover:opacity-80 py-[0.417vw] rounded-[0.26vw] flex flex-col items-center justify-center w-full"
+                }
+              >
+                <span
+                  className={
+                    "font-museo text-bg-grey font-medium text-[1.042vw] leading-[100%]"
+                  }
+                >
+                  Buy
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
