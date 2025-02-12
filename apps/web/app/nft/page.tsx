@@ -26,7 +26,6 @@ export default function Page() {
 
   useEffect(() => {
     const itemsPerPage = gridMode == 4 ? 8 : 12;
-    console.log(collectionID);
     algoliaClient
       .searchSingleIndex({
         indexName: "dev_NFT",
