@@ -17,7 +17,10 @@ export default function AccountCard({
   const { account } = useContext(SetupStoreContext);
 
   return (
-    <div className={"flex flex-row gap-[0.521vw] items-center"}>
+    <div
+      className={"flex flex-row gap-[0.521vw] items-center cursor-pointer"}
+      onClick={() => onClick?.()}
+    >
       <div
         className={
           "w-[2.24vw] h-[2.24vw] rounded-full border border-right-accent bg-[#141414] overflow-hidden"
@@ -41,7 +44,6 @@ export default function AccountCard({
             : "bg-right-accent",
           className,
         )}
-        onClick={() => onClick?.()}
       >
         {text}
       </div>
