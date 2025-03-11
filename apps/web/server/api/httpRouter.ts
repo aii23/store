@@ -10,6 +10,7 @@ import { lotteryBackendRouter } from "./routers/lottery-backend";
 import { claimRequestRouter } from "./routers/claim-requests";
 import { memetokensRouter } from "./routers/memetokens";
 import { txStoreRouter } from "./routers/txStore";
+import { nftRouter } from "./routers/NFT";
 
 /**
  * This is the primary router for your server.
@@ -28,6 +29,7 @@ export const httpRouter = createTRPCRouter({
   lotteryBackend: lotteryBackendRouter,
   memetokens: memetokensRouter,
   txStore: txStoreRouter,
+  nft: nftRouter,
 });
 
 // export type definition of API
