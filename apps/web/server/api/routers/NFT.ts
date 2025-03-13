@@ -3,6 +3,7 @@ import { createTRPCRouter, publicProcedure } from "../trpc";
 
 import { searchClient } from "@algolia/client-search";
 import { version } from "os";
+import { z } from "zod";
 
 const { NFT_ALGOLIA_PROJECT, NFT_ALGOLIA_KEY } = process.env;
 if (NFT_ALGOLIA_PROJECT === undefined)
@@ -114,4 +115,34 @@ export const nftRouter = createTRPCRouter({
 
     return result;
   }),
+  getCollectionsNFTV2: publicProcedure
+    .input(
+      z.object({
+        indexName: z.string(),
+        collectionName: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      //#TODO add filter for failed transactions
+      const result = await client.searchSingleIndex({
+        indexName: input.indexName,
+        searchParams: {
+          query: "",
+          hitsPerPage: 1000,
+          page: 0,
+          facetFilters: [
+            `collection:${input.collectionName}`,
+            "status:created",
+          ],
+        },
+      });
+
+      if (!result) return [];
+
+      const tokenList = result?.hits
+        ? (result as unknown as AlgoliaCollectionList)
+        : undefined;
+
+      return tokenList;
+    }),
 });
