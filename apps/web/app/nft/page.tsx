@@ -4,12 +4,13 @@ import NFTStorefront from "../../sections/NFTStorefront";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { algoliasearch, Hit } from "algoliasearch";
-import { AnyNFTItem, NFTCollectionIDList } from "../../lib/types/nftTypes";
+import { NFT, NFTCollectionIDList } from "../../lib/types/nftTypes";
 import Link from "next/link";
+import { api } from "../../trpc/react";
 
 const algoliaClient = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_PROJECT || "",
-  process.env.NEXT_PUBLIC_ALGOLIA_KEY || "",
+  process.env.NEXT_PUBLIC_ALGOLIA_KEY || ""
 );
 
 export default function Page() {
@@ -17,10 +18,27 @@ export default function Page() {
   const nftTotalPrice = 11340;
   const nftMintedAmount = 54;
 
-  const [collectionID, setCollectionID] = useState<NFTCollectionIDList>(
-    NFTCollectionIDList.Zknoid,
+  const collections = api.http.nft.getCollections.useQuery().data;
+
+  const [targetCollectionAddress, setTargetCollectionAddress] = useState(
+    "B62qpqH2ae7wrAzvBH31sacj9yTeCvMhz5Hx8obfm9onQrBwBeTkKVE"
   );
-  const [collectionItems, setCollectionItems] = useState<AnyNFTItem[]>([]);
+
+  const currentCollectionNFTs = api.http.nft.getCollectionsNFTV2.useQuery({
+    indexName: "standard-devnet",
+    collectionAddress: targetCollectionAddress,
+  }).data;
+
+  useEffect(() => {
+    console.log("Collections info");
+    console.log(collections);
+    console.log(currentCollectionNFTs);
+  }, [collections, currentCollectionNFTs]);
+
+  const [collectionID, setCollectionID] = useState<NFTCollectionIDList>(
+    NFTCollectionIDList.Zknoid
+  );
+  const [collectionItems, setCollectionItems] = useState<NFT[]>([]);
   const [gridMode, setGridMode] = useState<1 | 4 | 6>(4);
   const [page, setPage] = useState<number>(1);
 
@@ -36,27 +54,29 @@ export default function Page() {
       })
       .then((resp) => {
         setCollectionItems(
-          resp.hits
-            .map(
-              (value: Hit) =>
-                ({
-                  id: value.id,
-                  imageID: value.imageID,
-                  collectionID: value.collectionID,
-                  owner: value.owner,
-                  isMinted: value.isMinted,
-                  price: value.price,
-                  params: [
-                    // TODO: Replace with value.params
-                    { title: "expertise", value: value.expertise },
-                    { title: "race", value: value.race },
-                    { title: "rating", value: value.rating, amount: "50%" },
-                    { title: "skin", value: value.skin },
-                    { title: "edition", value: value.edition },
-                  ],
-                }) as AnyNFTItem,
-            )
-            .sort((a, b) => a.id - b.id),
+          resp.hits.map(
+            (value: Hit) =>
+              ({
+                id: value.id,
+                imageType: "local",
+                image: value.imageID,
+                collectionID: value.collectionID,
+                owner: value.owner,
+                isMinted: value.isMinted,
+                price: value.price,
+                params: [
+                  // TODO: Replace with value.params
+                  { key: "expertise", value: value.expertise },
+                  { key: "race", value: value.race },
+                  { key: "rating", value: value.rating },
+                  { key: "skin", value: value.skin },
+                  { key: "edition", value: value.edition },
+                ],
+                collection: "ZkNoid",
+                raw: undefined,
+              }) as NFT
+          )
+          // .sort((a, b) => a.id - b.id)
         );
       })
       .catch((error) => {
@@ -201,7 +221,7 @@ export default function Page() {
       <NFTStorefront
         collectionID={collectionID}
         setCollectionID={(value) => setCollectionID(value)}
-        collectionItems={collectionItems}
+        collectionItems={currentCollectionNFTs ?? []}
         gridMode={gridMode}
         setGridMode={(value) => setGridMode(value)}
         page={page}

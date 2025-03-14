@@ -1,9 +1,10 @@
-import { CollectionInfo } from "@silvana-one/api";
+import { CollectionInfo, NftInfo } from "@silvana-one/api";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 
 import { searchClient } from "@algolia/client-search";
 import { version } from "os";
 import { z } from "zod";
+import { NFT } from "../../../lib/types/nftTypes";
 
 const { NFT_ALGOLIA_PROJECT, NFT_ALGOLIA_KEY } = process.env;
 if (NFT_ALGOLIA_PROJECT === undefined)
@@ -19,15 +20,35 @@ interface ISourceData {
   version: number;
 }
 
+export interface INftParam {
+  key: string;
+  value: string;
+}
+
+export interface INft {
+  id: number;
+  imageType: string; // ipfs
+  image: string; // link to ipfs
+  owner: string | undefined;
+  isMinted: boolean;
+  price: number;
+  params: INftParam[];
+}
+
 const indexes: ISourceData[] = [
+  // {
+  //   name: "mainnetV2",
+  //   indexName: "mainnet",
+  //   version: 2,
+  // },
+  // {
+  //   name: "zekoV3",
+  //   indexName: "standard-zeko",
+  //   version: 3,
+  // },
   {
-    name: "mainnetV2",
-    indexName: "mainnet",
-    version: 2,
-  },
-  {
-    name: "zekoV3",
-    indexName: "standard-zeko",
+    name: "devnetV3",
+    indexName: "standard-devnet",
     version: 3,
   },
 ];
@@ -40,6 +61,18 @@ interface ICollection {
 
 export interface AlgoliaCollectionList {
   hits: CollectionInfo[];
+  nbHits: number;
+  page: number;
+  nbPages: number;
+  hitsPerPage: number;
+  exhaustiveNbHits: boolean;
+  exhaustiveTypo: boolean;
+  exhaustive: { nbHits: boolean; typo: boolean };
+  processingTimeMS: number;
+}
+
+export interface AlgoliaNftList {
+  hits: NftInfo[];
   nbHits: number;
   page: number;
   nbPages: number;
@@ -119,7 +152,7 @@ export const nftRouter = createTRPCRouter({
     .input(
       z.object({
         indexName: z.string(),
-        collectionName: z.string(),
+        collectionAddress: z.string(),
       })
     )
     .query(async ({ input }) => {
@@ -129,10 +162,9 @@ export const nftRouter = createTRPCRouter({
         searchParams: {
           query: "",
           hitsPerPage: 1000,
-          page: 0,
           facetFilters: [
-            `collection:${input.collectionName}`,
-            "status:created",
+            "contractType:nft",
+            `collectionAddress:${input.collectionAddress}`,
           ],
         },
       });
@@ -140,9 +172,38 @@ export const nftRouter = createTRPCRouter({
       if (!result) return [];
 
       const tokenList = result?.hits
-        ? (result as unknown as AlgoliaCollectionList)
+        ? (result as unknown as AlgoliaNftList)
         : undefined;
 
-      return tokenList;
+      // export interface INftParam {
+      //   name: string;
+      //   value: string;
+      // }
+
+      // export interface INft {
+      //   id: number;
+      //   imageType: string; // ipfs
+      //   image: string; // link to ipfs
+      //   owner: string | undefined;
+      //   isMinted: boolean;
+      //   price: number;
+      //   params: INftParam[];
+      // }
+
+      const nfts = tokenList?.hits.map((hit) => {
+        return {
+          id: hit.tokenId,
+          imageType: hit.collectionBaseURL,
+          image: hit.image,
+          owner: hit.owner,
+          isMinted: true, // All NFT-s from algolia are minted
+          price: 0,
+          params: hit.metadata["traits"],
+          collection: hit.collectionName,
+          raw: hit,
+        } as NFT;
+      });
+
+      return nfts;
     }),
 });
