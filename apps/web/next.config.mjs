@@ -128,6 +128,10 @@ const nextConfig = {
         hostname: "gateway.pinata.cloud",
         pathname: "/ipfs/**",
       },
+      {
+        protocol: "https",
+        hostname: "picsum.photos",
+      }
     ],
   },
 };

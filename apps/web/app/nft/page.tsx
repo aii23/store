@@ -13,6 +13,20 @@ const algoliaClient = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_KEY || ""
 );
 
+const mockedCollectionsQuery = {
+  ZkNoid_test: {
+    version: "v3",
+    indexName: "standard-devnet",
+    collectionAddress:
+      "B62qpqH2ae7wrAzvBH31sacj9yTeCvMhz5Hx8obfm9onQrBwBeTkKVE",
+  },
+  Tileville: {
+    version: "v2",
+    indexName: "mainnet",
+    collectionName: "Tileville",
+  },
+};
+
 export default function Page() {
   const nftLength = 112;
   const nftTotalPrice = 11340;
@@ -24,10 +38,9 @@ export default function Page() {
     "B62qpqH2ae7wrAzvBH31sacj9yTeCvMhz5Hx8obfm9onQrBwBeTkKVE"
   );
 
-  const currentCollectionNFTs = api.http.nft.getCollectionsNFTV2.useQuery({
-    indexName: "standard-devnet",
-    collectionAddress: targetCollectionAddress,
-  }).data;
+  const currentCollectionNFTs = api.http.nft.getCollectionsNFT.useQuery(
+    mockedCollectionsQuery.Tileville
+  ).data;
 
   useEffect(() => {
     console.log("Collections info");

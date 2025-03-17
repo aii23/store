@@ -26,7 +26,7 @@ export interface INftParam {
 }
 
 export interface INft {
-  id: number;
+  id: string;
   imageType: string; // ipfs
   image: string; // link to ipfs
   owner: string | undefined;
@@ -36,11 +36,11 @@ export interface INft {
 }
 
 const indexes: ISourceData[] = [
-  // {
-  //   name: "mainnetV2",
-  //   indexName: "mainnet",
-  //   version: 2,
-  // },
+  {
+    name: "mainnetV2",
+    indexName: "mainnet",
+    version: 2,
+  },
   // {
   //   name: "zekoV3",
   //   indexName: "standard-zeko",
@@ -57,6 +57,7 @@ interface ICollection {
   name: string;
   count: number;
   source: ISourceData;
+  address: string;
 }
 
 export interface AlgoliaCollectionList {
@@ -98,6 +99,7 @@ const getV2Collections = async (
       name: hit.value,
       count: hit.count,
       source,
+      address: "",
     };
   });
 };
@@ -126,7 +128,71 @@ const getV3Collections = async (
       name: hit.collectionName,
       count: 1,
       source,
+      address: hit.collectionAddress,
     };
+  });
+};
+
+const getV2NFTs = async (indexName: string, collectionName: string) => {
+  const result = await client.searchSingleIndex({
+    indexName,
+    searchParams: {
+      query: "",
+      hitsPerPage: 1000,
+      facetFilters: [`collection:${collectionName}`],
+    },
+  });
+
+  if (!result) return [];
+
+  const tokenList = result?.hits
+    ? (result as unknown as AlgoliaNftList)
+    : undefined;
+
+  return tokenList?.hits.map((hit) => {
+    return {
+      id: hit.tokenId,
+      imageType: hit.collectionBaseURL,
+      image: hit.image,
+      owner: hit.owner,
+      isMinted: true, // All NFT-s from algolia are minted
+      price: hit.price,
+      params: hit.metadata["traits"],
+      collection: (hit as any).collection,
+    } as NFT;
+  });
+};
+
+const getV3NFTs = async (indexName: string, collectionAddress: string) => {
+  const result = await client.searchSingleIndex({
+    indexName,
+    searchParams: {
+      query: "",
+      hitsPerPage: 1000,
+      facetFilters: [
+        "contractType:nft",
+        `collectionAddress:${collectionAddress}`,
+      ],
+    },
+  });
+
+  if (!result) return [];
+
+  const tokenList = result?.hits
+    ? (result as unknown as AlgoliaNftList)
+    : undefined;
+
+  return tokenList?.hits.map((hit) => {
+    return {
+      id: hit.tokenId,
+      imageType: hit.collectionBaseURL,
+      image: hit.image,
+      owner: hit.owner,
+      isMinted: true, // All NFT-s from algolia are minted
+      price: hit.price,
+      params: hit.metadata["traits"],
+      collection: hit.collectionName,
+    } as NFT;
   });
 };
 
@@ -148,62 +214,72 @@ export const nftRouter = createTRPCRouter({
 
     return result;
   }),
-  getCollectionsNFTV2: publicProcedure
+  getCollectionsNFT: publicProcedure
     .input(
       z.object({
+        version: z.string(),
         indexName: z.string(),
-        collectionAddress: z.string(),
+        collectionAddress: z.string().optional(),
+        collectionName: z.string().optional(),
       })
     )
     .query(async ({ input }) => {
+      if (input.version === "v2") {
+        return await getV2NFTs(input.indexName, input.collectionName!);
+      } else if (input.version === "v3") {
+        return await getV3NFTs(input.indexName, input.collectionAddress!);
+      }
+
       //#TODO add filter for failed transactions
-      const result = await client.searchSingleIndex({
-        indexName: input.indexName,
-        searchParams: {
-          query: "",
-          hitsPerPage: 1000,
-          facetFilters: [
-            "contractType:nft",
-            `collectionAddress:${input.collectionAddress}`,
-          ],
-        },
-      });
+      // const result = await client.searchSingleIndex({
+      //   indexName: input.indexName,
+      //   searchParams: {
+      //     query: "",
+      //     hitsPerPage: 1000,
+      //     facetFilters: [
+      //       // "contractType:nft",
+      //       // `collectionAddress:${input.collectionAddress}`,
+      //     ],
+      //   },
+      // });
 
-      if (!result) return [];
+      // if (!result) return [];
 
-      const tokenList = result?.hits
-        ? (result as unknown as AlgoliaNftList)
-        : undefined;
+      // const tokenList = result?.hits
+      //   ? (result as unknown as AlgoliaNftList)
+      //   : undefined;
 
-      // export interface INftParam {
-      //   name: string;
-      //   value: string;
-      // }
+      // // export interface INftParam {
+      // //   name: string;
+      // //   value: string;
+      // // }
 
-      // export interface INft {
-      //   id: number;
-      //   imageType: string; // ipfs
-      //   image: string; // link to ipfs
-      //   owner: string | undefined;
-      //   isMinted: boolean;
-      //   price: number;
-      //   params: INftParam[];
-      // }
+      // // export interface INft {
+      // //   id: number;
+      // //   imageType: string; // ipfs
+      // //   image: string; // link to ipfs
+      // //   owner: string | undefined;
+      // //   isMinted: boolean;
+      // //   price: number;
+      // //   params: INftParam[];
+      // // }
 
-      const nfts = tokenList?.hits.map((hit) => {
-        return {
-          id: hit.tokenId,
-          imageType: hit.collectionBaseURL,
-          image: hit.image,
-          owner: hit.owner,
-          isMinted: true, // All NFT-s from algolia are minted
-          price: 0,
-          params: hit.metadata["traits"],
-          collection: hit.collectionName,
-          raw: hit,
-        } as NFT;
-      });
+      // const nfts = tokenList?.hits.map((hit) => {
+      //   return {
+      //     id: hit.tokenId,
+      //     imageType: hit.collectionBaseURL,
+      //     image: hit.image,
+      //     owner: hit.owner,
+      //     isMinted: true, // All NFT-s from algolia are minted
+      //     price: 0,
+      //     params: hit.metadata["traits"],
+      //     collection: hit.collectionName,
+      //     raw: hit,
+      //   } as NFT;
+      // });
 
-      return nfts;
+      // console.log(nfts);
+
+      // return nfts;
     }),
 });
