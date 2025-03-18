@@ -9,6 +9,7 @@ export interface NFTParam {
 
 export interface NFT {
   id: string;
+  name: string;
   imageType: string; // ipfs
   image: string; // link to ipfs
   owner: string | undefined;

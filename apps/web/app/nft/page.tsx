@@ -34,12 +34,8 @@ export default function Page() {
 
   const collections = api.http.nft.getCollections.useQuery().data;
 
-  const [targetCollectionAddress, setTargetCollectionAddress] = useState(
-    "B62qpqH2ae7wrAzvBH31sacj9yTeCvMhz5Hx8obfm9onQrBwBeTkKVE"
-  );
-
   const currentCollectionNFTs = api.http.nft.getCollectionsNFT.useQuery(
-    mockedCollectionsQuery.Tileville
+    mockedCollectionsQuery.ZkNoid_test
   ).data;
 
   useEffect(() => {
@@ -71,6 +67,7 @@ export default function Page() {
             (value: Hit) =>
               ({
                 id: value.id,
+                name: "some",
                 imageType: "local",
                 image: value.imageID,
                 collectionID: value.collectionID,

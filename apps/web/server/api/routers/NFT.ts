@@ -152,13 +152,18 @@ const getV2NFTs = async (indexName: string, collectionName: string) => {
   return tokenList?.hits.map((hit) => {
     return {
       id: hit.tokenId,
+      name: hit.name,
       imageType: hit.collectionBaseURL,
       image: hit.image,
       owner: hit.owner,
       isMinted: true, // All NFT-s from algolia are minted
       price: hit.price,
-      params: hit.metadata["traits"],
+      params: Object.entries((hit as any).properties).map(([k, v]) => ({
+        key: k,
+        value: v,
+      })),
       collection: (hit as any).collection,
+      raw: hit,
     } as NFT;
   });
 };
@@ -185,6 +190,7 @@ const getV3NFTs = async (indexName: string, collectionAddress: string) => {
   return tokenList?.hits.map((hit) => {
     return {
       id: hit.tokenId,
+      name: hit.name,
       imageType: hit.collectionBaseURL,
       image: hit.image,
       owner: hit.owner,
@@ -192,6 +198,7 @@ const getV3NFTs = async (indexName: string, collectionAddress: string) => {
       price: hit.price,
       params: hit.metadata["traits"],
       collection: hit.collectionName,
+      raw: hit,
     } as NFT;
   });
 };

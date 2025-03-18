@@ -45,7 +45,8 @@ export default function NFTItem({
               "col-span-3 font-museo text-foreground font-bold leading-[100%] text-[0.833vw]"
             }
           >
-            {nft.collection.charAt(0).toUpperCase() + nft.collection.slice(1)}{" "}
+            {nft.name}
+            {/* {nft.collection.charAt(0).toUpperCase() + nft.collection.slice(1)}{" "} */}
             {/* {nft.id < 100 ? "00" + nft.id : "0" + nft.id} */}
           </span>
           <span
@@ -104,7 +105,8 @@ export default function NFTItem({
               gridMode == 4 ? "text-[1.25vw]" : "text-[0.833vw]"
             )}
           >
-            {nft.collection.charAt(0).toUpperCase() + nft.collection.slice(1)}{" "}
+            {nft.name}
+            {/* {nft.collection.charAt(0).toUpperCase() + nft.collection.slice(1)}{" "} */}
             {/* {nft.id < 100 ? "00" + nft.id : "0" + nft.id} */}
           </span>
           <span
