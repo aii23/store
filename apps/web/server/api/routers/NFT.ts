@@ -4,7 +4,7 @@ import { createTRPCRouter, publicProcedure } from "../trpc";
 import { searchClient } from "@algolia/client-search";
 import { version } from "os";
 import { z } from "zod";
-import { NFT } from "../../../lib/types/nftTypes";
+import { ICollection, ISourceData, NFT } from "../../../lib/types/nftTypes";
 
 const { NFT_ALGOLIA_PROJECT, NFT_ALGOLIA_KEY } = process.env;
 if (NFT_ALGOLIA_PROJECT === undefined)
@@ -13,27 +13,6 @@ if (NFT_ALGOLIA_KEY === undefined)
   throw new Error("NFT_ALGOLIA_KEY is undefined");
 
 const client = searchClient(NFT_ALGOLIA_PROJECT, NFT_ALGOLIA_KEY);
-
-interface ISourceData {
-  name: string;
-  indexName: string;
-  version: number;
-}
-
-export interface INftParam {
-  key: string;
-  value: string;
-}
-
-export interface INft {
-  id: string;
-  imageType: string; // ipfs
-  image: string; // link to ipfs
-  owner: string | undefined;
-  isMinted: boolean;
-  price: number;
-  params: INftParam[];
-}
 
 const indexes: ISourceData[] = [
   {
@@ -52,13 +31,6 @@ const indexes: ISourceData[] = [
     version: 3,
   },
 ];
-
-interface ICollection {
-  name: string;
-  count: number;
-  source: ISourceData;
-  address: string;
-}
 
 export interface AlgoliaCollectionList {
   hits: CollectionInfo[];
@@ -236,57 +208,5 @@ export const nftRouter = createTRPCRouter({
       } else if (input.version === "v3") {
         return await getV3NFTs(input.indexName, input.collectionAddress!);
       }
-
-      //#TODO add filter for failed transactions
-      // const result = await client.searchSingleIndex({
-      //   indexName: input.indexName,
-      //   searchParams: {
-      //     query: "",
-      //     hitsPerPage: 1000,
-      //     facetFilters: [
-      //       // "contractType:nft",
-      //       // `collectionAddress:${input.collectionAddress}`,
-      //     ],
-      //   },
-      // });
-
-      // if (!result) return [];
-
-      // const tokenList = result?.hits
-      //   ? (result as unknown as AlgoliaNftList)
-      //   : undefined;
-
-      // // export interface INftParam {
-      // //   name: string;
-      // //   value: string;
-      // // }
-
-      // // export interface INft {
-      // //   id: number;
-      // //   imageType: string; // ipfs
-      // //   image: string; // link to ipfs
-      // //   owner: string | undefined;
-      // //   isMinted: boolean;
-      // //   price: number;
-      // //   params: INftParam[];
-      // // }
-
-      // const nfts = tokenList?.hits.map((hit) => {
-      //   return {
-      //     id: hit.tokenId,
-      //     imageType: hit.collectionBaseURL,
-      //     image: hit.image,
-      //     owner: hit.owner,
-      //     isMinted: true, // All NFT-s from algolia are minted
-      //     price: 0,
-      //     params: hit.metadata["traits"],
-      //     collection: hit.collectionName,
-      //     raw: hit,
-      //   } as NFT;
-      // });
-
-      // console.log(nfts);
-
-      // return nfts;
     }),
 });

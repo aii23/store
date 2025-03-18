@@ -27,6 +27,20 @@ export interface NFTCollection<Items = any> {
   totalPrice: number;
 }
 
+// API NFT collection list
+export interface ISourceData {
+  name: string;
+  indexName: string;
+  version: number;
+}
+
+export interface ICollection {
+  name: string;
+  count: number;
+  source: ISourceData;
+  address: string;
+}
+
 // NFTZknoid
 // export interface NFTZknoid extends NFT {
 //   params: [
