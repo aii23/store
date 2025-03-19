@@ -56,6 +56,57 @@ export interface AlgoliaNftList {
   processingTimeMS: number;
 }
 
+const getNFTParams = (hit: any, version: string) => {
+  if (version === "v2") {
+    return Object.entries(hit.properties).map(([k, v]) => ({
+      key: k,
+      value: v,
+    }));
+  } else if (version === "v3") {
+    return hit.metadata.traits;
+  }
+};
+
+const getNFTs = async (
+  indexName: string,
+  version: string,
+  facetFilters: string[]
+) => {
+  const result = await client.searchSingleIndex({
+    indexName,
+    searchParams: {
+      query: "",
+      hitsPerPage: 1000,
+      facetFilters,
+    },
+  });
+
+  if (!result) return [];
+
+  const tokenList = result?.hits
+    ? (result as unknown as AlgoliaNftList)
+    : undefined;
+
+  return (
+    tokenList?.hits.map((hit) => {
+      return {
+        id: hit.tokenId,
+        name: hit.name,
+        imageType: hit.collectionBaseURL,
+        image: hit.image,
+        owner: hit.owner,
+        isMinted: true, // All NFT-s from algolia are minted
+        price: hit.price,
+        params: getNFTParams(hit, version),
+        collection: (hit as any).collection,
+        raw: hit,
+      } as NFT;
+    }) ?? []
+  );
+};
+
+////////////////////////////// V2 //////////////////////////////
+
 const getV2Collections = async (
   source: ISourceData
 ): Promise<ICollection[]> => {
@@ -75,6 +126,28 @@ const getV2Collections = async (
     };
   });
 };
+
+const getV2NFTs = async (indexName: string, collectionName: string) => {
+  return getNFTs(indexName, "v2", [`collection:${collectionName}`]);
+};
+
+const getUserV2NFTs = async (address: string) => {
+  const v2Indexes = indexes
+    .filter((v) => v.version === 2)
+    .map((v) => v.indexName);
+
+  let result: NFT[] = [];
+
+  for (const indexName of v2Indexes) {
+    const curNFTs = await getNFTs(indexName, "v2", [`owner:${address}`]);
+
+    result.push(...curNFTs);
+  }
+
+  return result;
+};
+
+////////////////////////////// V3 //////////////////////////////
 
 const getV3Collections = async (
   source: ISourceData
@@ -105,74 +178,30 @@ const getV3Collections = async (
   });
 };
 
-const getV2NFTs = async (indexName: string, collectionName: string) => {
-  const result = await client.searchSingleIndex({
-    indexName,
-    searchParams: {
-      query: "",
-      hitsPerPage: 1000,
-      facetFilters: [`collection:${collectionName}`],
-    },
-  });
-
-  if (!result) return [];
-
-  const tokenList = result?.hits
-    ? (result as unknown as AlgoliaNftList)
-    : undefined;
-
-  return tokenList?.hits.map((hit) => {
-    return {
-      id: hit.tokenId,
-      name: hit.name,
-      imageType: hit.collectionBaseURL,
-      image: hit.image,
-      owner: hit.owner,
-      isMinted: true, // All NFT-s from algolia are minted
-      price: hit.price,
-      params: Object.entries((hit as any).properties).map(([k, v]) => ({
-        key: k,
-        value: v,
-      })),
-      collection: (hit as any).collection,
-      raw: hit,
-    } as NFT;
-  });
+const getV3NFTs = async (indexName: string, collectionAddress: string) => {
+  return getNFTs(indexName, "v3", [
+    "contractType:nft",
+    `collectionAddress:${collectionAddress}`,
+  ]);
 };
 
-const getV3NFTs = async (indexName: string, collectionAddress: string) => {
-  const result = await client.searchSingleIndex({
-    indexName,
-    searchParams: {
-      query: "",
-      hitsPerPage: 1000,
-      facetFilters: [
-        "contractType:nft",
-        `collectionAddress:${collectionAddress}`,
-      ],
-    },
-  });
+const getUserV3NFTs = async (address: string) => {
+  const v2Indexes = indexes
+    .filter((v) => v.version === 3)
+    .map((v) => v.indexName);
 
-  if (!result) return [];
+  let result: NFT[] = [];
 
-  const tokenList = result?.hits
-    ? (result as unknown as AlgoliaNftList)
-    : undefined;
+  for (const indexName of v2Indexes) {
+    const curNFTs = await getNFTs(indexName, "v3", [
+      "contractType:nft",
+      `owner:${address}`,
+    ]);
 
-  return tokenList?.hits.map((hit) => {
-    return {
-      id: hit.tokenId,
-      name: hit.name,
-      imageType: hit.collectionBaseURL,
-      image: hit.image,
-      owner: hit.owner,
-      isMinted: true, // All NFT-s from algolia are minted
-      price: hit.price,
-      params: hit.metadata["traits"],
-      collection: hit.collectionName,
-      raw: hit,
-    } as NFT;
-  });
+    result.push(...curNFTs);
+  }
+
+  return result;
 };
 
 export const nftRouter = createTRPCRouter({
@@ -208,5 +237,23 @@ export const nftRouter = createTRPCRouter({
       } else if (input.version === "v3") {
         return await getV3NFTs(input.indexName, input.collectionAddress!);
       }
+    }),
+
+  getUserNFTs: publicProcedure
+    .input(
+      z.object({
+        address: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      let result: NFT[] = [];
+
+      const v2NFTs = await getUserV2NFTs(input.address);
+      const v3NFTs = await getUserV3NFTs(input.address);
+
+      result.push(...v2NFTs);
+      result.push(...v3NFTs);
+
+      return result;
     }),
 });

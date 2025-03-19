@@ -35,7 +35,7 @@ export default function Page() {
   const collections = api.http.nft.getCollections.useQuery().data;
 
   const currentCollectionNFTs = api.http.nft.getCollectionsNFT.useQuery(
-    mockedCollectionsQuery.ZkNoid_test
+    mockedCollectionsQuery.Tileville
   ).data;
 
   useEffect(() => {
