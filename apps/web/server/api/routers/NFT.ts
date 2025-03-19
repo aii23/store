@@ -71,7 +71,7 @@ const getV2Collections = async (
       name: hit.value,
       count: hit.count,
       source,
-      address: "",
+      address: "B62qs2NthDuxAT94tTFg6MtuaP1gaBxTZyNv9D3uQiQciy1VsaimNFT",
     };
   });
 };
