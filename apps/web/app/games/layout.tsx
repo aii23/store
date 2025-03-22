@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { ReactNode, useState, useEffect } from "react";
-import { useRoundsStore } from "../../../../packages/games/lottery/lib/roundsStore";
-import { api } from "../../trpc/react";
-import { api as vanillaApi } from "../../trpc/vanilla";
+import { ReactNode, useState, useEffect } from 'react';
+import { useRoundsStore } from '../../../../packages/games/lottery/lib/roundsStore';
+import { api } from '../../trpc/react';
+import { api as vanillaApi } from '../../trpc/vanilla';
 
-import { ILotteryRound } from "../../../../packages/games/lottery/lib/types";
-import { useNetworkStore } from "../../../../packages/sdk/lib/stores/network";
-import LotteryContext from "../../../../packages/games/lottery/lib/contexts/LotteryContext";
-import SetupStoreContext from "../../../../packages/sdk/lib/contexts/SetupStoreContext";
+import { ILotteryRound } from '../../../../packages/games/lottery/lib/types';
+import { useNetworkStore } from '../../../../packages/sdk/lib/stores/network';
+import LotteryContext from '../../../../packages/games/lottery/lib/contexts/LotteryContext';
+import SetupStoreContext from '../../../../packages/sdk/lib/contexts/SetupStoreContext';
 
 export default function Layout({ children }: { children: ReactNode }) {
   const roundsStore = useRoundsStore();
@@ -22,20 +22,18 @@ export default function Layout({ children }: { children: ReactNode }) {
     },
     {
       refetchInterval: 5000,
-    },
+    }
   );
 
   const getMinaEventsQuery = api.http.lotteryBackend.getMinaEvents.useQuery({});
 
   const addGiftCodesMutation = api.http.giftCodes.addGiftCodes.useMutation();
-  const addClaimRequestMutation =
-    api.http.claimRequests.requestClaim.useMutation();
-  const sendTicketQueueMutation =
-    api.http.giftCodes.sendTicketQueue.useMutation();
+  const addClaimRequestMutation = api.http.claimRequests.requestClaim.useMutation();
+  const sendTicketQueueMutation = api.http.giftCodes.sendTicketQueue.useMutation();
   const getRoundsInfosQuery = api.http.lotteryBackend.getRoundInfos;
 
   const accountData = api.http.accounts.getAccount.useQuery({
-    userAddress: networkStore.address || "",
+    userAddress: networkStore.address || '',
   }).data;
   const nameMutator = api.http.accounts.setName.useMutation();
   const avatarIdMutator = api.http.accounts.setAvatar.useMutation();
@@ -43,17 +41,16 @@ export default function Layout({ children }: { children: ReactNode }) {
   const gameFeedbackMutator = api.http.ratings.setGameFeedback.useMutation();
   const getGameIdQuery = api.http.ratings.getGameRating;
 
-  const setFavoriteGameStatusMutation =
-    api.http.favorites.setFavoriteGameStatus.useMutation();
+  const setFavoriteGameStatusMutation = api.http.favorites.setFavoriteGameStatus.useMutation();
   const getFavoriteGamesQuery = api.http.favorites.getFavoriteGames.useQuery({
-    userAddress: networkStore.address || "",
+    userAddress: networkStore.address || '',
   });
 
   const sendMessageMutation = api.ws.chat.sendMessage.useMutation();
   const onMessageSubscription = api.ws.chat.onMessage;
 
   const userTransactions = api.http.txStore.getUserTransactions.useQuery({
-    userAddress: networkStore.address || "",
+    userAddress: networkStore.address || '',
   });
   const addTransaction = api.http.txStore.addTransaction.useMutation();
 
@@ -76,12 +73,12 @@ export default function Layout({ children }: { children: ReactNode }) {
           avatarId: accountData?.account?.avatarId,
           nameMutator: (name) =>
             nameMutator.mutate({
-              userAddress: networkStore.address || "",
+              userAddress: networkStore.address || '',
               name: name,
             }),
           avatarIdMutator: (avatarId) =>
             avatarIdMutator.mutate({
-              userAddress: networkStore.address || "",
+              userAddress: networkStore.address || '',
               avatarId: avatarId,
             }),
         },
@@ -94,8 +91,8 @@ export default function Layout({ children }: { children: ReactNode }) {
               rating: feedback.rating,
             }),
           getGameRatingQuery: (gameId) =>
-            (getGameIdQuery.useQuery({ gameId: gameId })?.data
-              ?.rating as Record<number, number>) || undefined,
+            (getGameIdQuery.useQuery({ gameId: gameId })?.data?.rating as Record<number, number>) ||
+            undefined,
         },
         favorites: {
           setFavoriteGameStatus: (userAddress, gameId, status) =>
@@ -132,12 +129,12 @@ export default function Layout({ children }: { children: ReactNode }) {
           roundInfo: roundInfo,
           minaEvents: minaEvents,
           getRoundsInfosQuery: (roundsIds, params) =>
-            (getRoundsInfosQuery.useQuery({ roundIds: roundsIds }, params)
-              ?.data as Record<number, ILotteryRound>) || undefined,
-          addGiftCodesMutation: (giftCodes) =>
-            addGiftCodesMutation.mutate(giftCodes),
-          addClaimRequestMutation: (claim) =>
-            addClaimRequestMutation.mutate(claim),
+            (getRoundsInfosQuery.useQuery({ roundIds: roundsIds }, params)?.data as Record<
+              number,
+              ILotteryRound
+            >) || undefined,
+          addGiftCodesMutation: (giftCodes) => addGiftCodesMutation.mutate(giftCodes),
+          addClaimRequestMutation: (claim) => addClaimRequestMutation.mutate(claim),
           sendTicketQueueMutation: (ticketQueue) =>
             sendTicketQueueMutation.mutate({
               userAddress: ticketQueue.userAddress,
