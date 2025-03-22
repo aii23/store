@@ -1,4 +1,4 @@
-import { AnyNFTItem } from '../../lib/types/nftTypes';
+import { NFT } from '../../lib/types/nftTypes';
 import { cn, formatAddress } from '@zknoid/sdk/lib/helpers';
 import Image from 'next/image';
 
@@ -8,8 +8,8 @@ export default function NFTItem({
   setChoosenID,
 }: {
   gridMode: number;
-  nft: AnyNFTItem;
-  setChoosenID: (id: number) => void;
+  nft: NFT;
+  setChoosenID: (id: string) => void;
 }) {
   return (
     <div
@@ -30,8 +30,8 @@ export default function NFTItem({
         )}
       >
         <Image
-          src={`https://res.cloudinary.com/dw4kivbv0/image/upload/w_1000,f_auto,q_auto:best/v1/${nft.imageID}`}
-          alt={`${nft.collectionID} + ${nft} NFT`}
+          src={nft.image}
+          alt={`${nft.collection} + ${nft} NFT`}
           className={'w-full h-full object-contain object-center'}
           width={1000}
           height={1000}
@@ -44,8 +44,7 @@ export default function NFTItem({
               'hidden lg:!inline-block col-span-3 font-museo text-foreground font-bold leading-[100%] text-[0.833vw]'
             }
           >
-            {nft.collectionID.charAt(0).toUpperCase() + nft.collectionID.slice(1)}{' '}
-            {nft.id < 100 ? '00' + nft.id : '0' + nft.id}
+            {nft.name}
           </span>
           <span
             className={
@@ -101,8 +100,7 @@ export default function NFTItem({
               gridMode == 4 ? 'lg:!text-[1.25vw]' : 'lg:!text-[0.833vw]'
             )}
           >
-            {nft.collectionID.charAt(0).toUpperCase() + nft.collectionID.slice(1)}{' '}
-            {nft.id < 100 ? '00' + nft.id : '0' + nft.id}
+            {nft.name}
           </span>
           <span
             className={cn(

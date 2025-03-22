@@ -3,19 +3,21 @@ export enum NFTCollectionIDList {
 }
 
 export interface NFTParam {
-  title: string;
+  key: string;
   value: string;
-  amount?: string | number;
 }
 
 export interface NFT {
-  id: number;
-  imageID: string;
-  collectionID: NFTCollectionIDList;
+  id: string;
+  name: string;
+  imageType: string; // ipfs
+  image: string; // link to ipfs
   owner: string | undefined;
   isMinted: boolean;
   price: number;
   params: NFTParam[];
+  collection: string;
+  raw: any | undefined;
 }
 
 export interface NFTCollection<Items = any> {
@@ -25,18 +27,32 @@ export interface NFTCollection<Items = any> {
   totalPrice: number;
 }
 
-// NFTZknoid
-export interface NFTZknoid extends NFT {
-  params: [
-    { title: "expertise"; value: "king" | "wizard" | "warrior" | "villager" },
-    { title: "race"; value: "dragon" | "lizard" | "frog" },
-    { title: "rating"; value: "gold" | "bronze" | "silver"; amount: string },
-    { title: "skin"; value: "green" | "black" | "purple" | "red" },
-    { title: "edition"; value: "first" },
-  ];
+// API NFT collection list
+export interface ISourceData {
+  name: string;
+  indexName: string;
+  version: number;
 }
 
-export interface NFTCollectionZknoid extends NFTCollection<NFTZknoid> {}
+export interface ICollection {
+  name: string;
+  count: number;
+  source: ISourceData;
+  address: string;
+}
 
-export type AnyNFTItem = NFTZknoid;
-export type AnyNFTCollection = NFTCollectionZknoid;
+// NFTZknoid
+// export interface NFTZknoid extends NFT {
+//   params: [
+//     { title: "expertise"; value: "king" | "wizard" | "warrior" | "villager" },
+//     { title: "race"; value: "dragon" | "lizard" | "frog" },
+//     { title: "rating"; value: "gold" | "bronze" | "silver"; amount: string },
+//     { title: "skin"; value: "green" | "black" | "purple" | "red" },
+//     { title: "edition"; value: "first" },
+//   ];
+// }
+
+// export interface NFTCollectionZknoid extends NFTCollection<NFTZknoid> {}
+
+// export type AnyNFTItem = NFTZknoid;
+// export type AnyNFTCollection = NFTCollectionZknoid;

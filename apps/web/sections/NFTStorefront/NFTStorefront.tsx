@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '../../../../packages/sdk/components/shared/Select/Select';
 import { cn } from '@zknoid/sdk/lib/helpers';
-import { AnyNFTItem, NFTCollectionIDList } from '../../lib/types/nftTypes';
+import { NFT, NFTCollectionIDList } from '../../lib/types/nftTypes';
 import NFTDetailsModal from '../../widgets/NFTDetailsModal';
 import { useState } from 'react';
 import NFTItem from '../../entities/NFTItem';
@@ -31,13 +31,13 @@ export default function NFTStorefront({
 }: {
   collectionID: NFTCollectionIDList;
   setCollectionID: (collectionID: NFTCollectionIDList) => void;
-  collectionItems: AnyNFTItem[];
+  collectionItems: NFT[];
   gridMode: 1 | 4 | 6;
   setGridMode: (gridMode: 1 | 4 | 6) => void;
   page: number;
   setPage: (page: number) => void;
 }) {
-  const [choosenNFTID, setChoosenNFTID] = useState<number | undefined>(undefined);
+  const [choosenNFTID, setChoosenNFTID] = useState<string | undefined>(undefined);
   return (
     <section
       className={
