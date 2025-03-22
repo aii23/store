@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
-import { AnyNFTItem, NFTParam } from '../../lib/types/nftTypes';
+import { NFT, NFTParam } from '../../lib/types/nftTypes';
 
 const DetailItem = ({ detail }: { detail: NFTParam }) => {
   return (
@@ -10,7 +10,7 @@ const DetailItem = ({ detail }: { detail: NFTParam }) => {
       }
     >
       <div className={'flex flex-row gap-[2.353vw] lg:!gap-[0.521vw] items-center'}>
-        <span>{detail.title.charAt(0).toUpperCase() + detail.title.slice(1)}</span>
+        <span>{detail.key.charAt(0).toUpperCase() + detail.key.slice(1)}</span>
         <svg
           width="18"
           height="18"
@@ -39,7 +39,7 @@ const DetailItem = ({ detail }: { detail: NFTParam }) => {
             'text-[3.765vw] lg:!text-[0.833vw] text-foreground font-plexsans font-semibold leading-[110%]'
           }
         >
-          {detail.amount}
+          {detail.value}
         </span>
       </div>
     </div>
@@ -51,7 +51,7 @@ export default function NFTDetailsModal({
   isOpen,
   onClose,
 }: {
-  nft: AnyNFTItem;
+  nft: NFT;
   isOpen: boolean;
   onClose: () => void;
 }) {
@@ -80,8 +80,8 @@ export default function NFTDetailsModal({
               }
             >
               <Image
-                src={`https://res.cloudinary.com/dw4kivbv0/image/upload/w_1000,f_auto,q_auto:best/v1/${nft.imageID}`}
-                alt={`${nft.collectionID} + ${nft} NFT`}
+                src={nft.image}
+                alt={`${nft.collection} + ${nft} NFT`}
                 width={500}
                 height={500}
                 className={'object-center object-cover'}
@@ -95,8 +95,7 @@ export default function NFTDetailsModal({
                       'font-museo text-[4.706vw] lg:!text-[1.25vw] font-bold text-foreground'
                     }
                   >
-                    {nft.collectionID.charAt(0).toUpperCase() + nft.collectionID.slice(1)}{' '}
-                    {nft.id < 100 ? '00' + nft.id : '0' + nft.id}
+                    {nft.name}
                   </span>
                   <span
                     className={
