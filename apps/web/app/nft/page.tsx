@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import NFTStorefront from "../../sections/NFTStorefront";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { algoliasearch, Hit } from "algoliasearch";
-import { AnyNFTItem, NFTCollectionIDList } from "../../lib/types/nftTypes";
-import Link from "next/link";
+import NFTStorefront from '../../sections/NFTStorefront';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { algoliasearch, Hit } from 'algoliasearch';
+import { AnyNFTItem, NFTCollectionIDList } from '../../lib/types/nftTypes';
+import Link from 'next/link';
 
 const algoliaClient = algoliasearch(
-  process.env.NEXT_PUBLIC_ALGOLIA_PROJECT || "",
-  process.env.NEXT_PUBLIC_ALGOLIA_KEY || "",
+  process.env.NEXT_PUBLIC_ALGOLIA_PROJECT || '',
+  process.env.NEXT_PUBLIC_ALGOLIA_KEY || ''
 );
 
 export default function Page() {
@@ -17,18 +17,17 @@ export default function Page() {
   const nftTotalPrice = 11340;
   const nftMintedAmount = 54;
 
-  const [collectionID, setCollectionID] = useState<NFTCollectionIDList>(
-    NFTCollectionIDList.Zknoid,
-  );
+  const [collectionID, setCollectionID] = useState<NFTCollectionIDList>(NFTCollectionIDList.Zknoid);
   const [collectionItems, setCollectionItems] = useState<AnyNFTItem[]>([]);
   const [gridMode, setGridMode] = useState<1 | 4 | 6>(4);
   const [page, setPage] = useState<number>(1);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {
     const itemsPerPage = gridMode == 4 ? 8 : 12;
     algoliaClient
       .searchSingleIndex({
-        indexName: "dev_NFT",
+        indexName: 'dev_NFT',
         searchParams: {
           facetFilters: [`collection:-${collectionID}`],
           hitsPerPage: itemsPerPage,
@@ -48,51 +47,74 @@ export default function Page() {
                   price: value.price,
                   params: [
                     // TODO: Replace with value.params
-                    { title: "expertise", value: value.expertise },
-                    { title: "race", value: value.race },
-                    { title: "rating", value: value.rating, amount: "50%" },
-                    { title: "skin", value: value.skin },
-                    { title: "edition", value: value.edition },
+                    { title: 'expertise', value: value.expertise },
+                    { title: 'race', value: value.race },
+                    { title: 'rating', value: value.rating, amount: '50%' },
+                    { title: 'skin', value: value.skin },
+                    { title: 'edition', value: value.edition },
                   ],
-                }) as AnyNFTItem,
+                }) as AnyNFTItem
             )
-            .sort((a, b) => a.id - b.id),
+            .sort((a, b) => a.id - b.id)
         );
       })
       .catch((error) => {
-        console.log("Algolia error", error);
+        console.log('Algolia error', error);
       });
   }, [collectionID, gridMode, page]);
 
+  useEffect(() => {
+    const checkWidth = () => {
+      setIsMobile(window.innerWidth <= 1024);
+    };
+
+    checkWidth();
+
+    window.addEventListener('resize', checkWidth);
+
+    return () => window.removeEventListener('resize', checkWidth);
+  }, []);
+
   return (
-    <div className={"w-full"}>
-      <div className={"relative w-full h-[117.647vw] lg:!h-[20.833vw]"}>
-        <Image
-          src={
-            "https://res.cloudinary.com/dw4kivbv0/image/upload/w_3000,f_auto,fl_progressive:semi,q_auto:best/v1/store/nft/xnhhauzu6mliclwhb0ja"
-          }
-          alt={"NFTStorefront"}
-          width={2000}
-          height={800}
-          className={
-            "absolue left-0 top-0 w-full h-full object-center object-cover"
-          }
-        />
+    <div className={'w-full'}>
+      <div className={'relative w-full h-[117.647vw] lg:!h-[20.833vw]'}>
+        {isMobile ? (
+          <Image
+            src={
+              'https://res.cloudinary.com/dw4kivbv0/image/upload/w_1024,f_auto,fl_progressive:semi,q_auto:best/v1/store/nft/ytosgno70k1c64ozoddm'
+            }
+            alt={'NFTStorefront'}
+            width={1024}
+            height={800}
+            className={'absolue left-0 top-0 w-full h-full object-center object-cover'}
+          />
+        ) : (
+          <Image
+            src={
+              'https://res.cloudinary.com/dw4kivbv0/image/upload/w_3000,f_auto,fl_progressive:semi,q_auto:best/v1/store/nft/xnhhauzu6mliclwhb0ja'
+            }
+            alt={'NFTStorefront'}
+            width={2000}
+            height={800}
+            className={'absolue left-0 top-0 w-full h-full object-center object-cover'}
+          />
+        )}
+
         <div
           className={
-            "absolute left-0 top-0 flex flex-col w-full h-full px-[4.706vw] lg:!px-[2.604vw] py-[4.706vw] lg:!py-[1.563vw]"
+            'absolute left-0 top-0 flex flex-col gap-[4.706vw] lg:!gap-0 w-full h-full px-[4.706vw] lg:!px-[2.604vw] py-[4.706vw] lg:!py-[1.563vw]'
           }
         >
-          <div className={"flex items-start justify-end h-full w-full"}>
+          <div className={'flex items-start justify-end h-fit lg:!h-full w-full'}>
             <Link
-              href={"/nft/info"}
+              href={'/nft/info'}
               className={
-                "flex flex-row items-center lg:!gap-[0.521vw] lg:!p-[0.521vw] lg:!rounded-[0.521vw] backdrop-blur-[20px] bg-foreground/10"
+                'flex flex-row mr-auto lg:!mr-0 items-center gap-[2.353vw] lg:!gap-[0.521vw] p-[2.353vw] lg:!p-[0.521vw] rounded-[2.353vw] lg:!rounded-[0.521vw] backdrop-blur-[20px] bg-foreground/10'
               }
             >
               <span
                 className={
-                  "lg:!text-[1.667vw] font-plexsans font-bold leading-[100%] text-foreground"
+                  'text-[3.765vw] lg:!text-[1.667vw] font-plexsans font-bold leading-[100%] text-foreground'
                 }
               >
                 Traits Info
@@ -103,7 +125,7 @@ export default function Page() {
                 viewBox="0 0 27 28"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className={"lg:!w-[1.406vw] lg:!h-[1.406vw]"}
+                className={'w-[5.882vw] lg:!w-[1.406vw] h-[5.882vw] lg:!h-[1.406vw]'}
               >
                 <circle cx="13.5" cy="14" r="13.5" fill="#F9F8F4" />
                 <path
@@ -114,41 +136,48 @@ export default function Page() {
             </Link>
           </div>
           <div
-            className={"w-full h-full flex flex-row justify-between items-end"}
+            className={
+              'w-full lg:!h-full grid grid-cols-3 gap-[2.353vw] lg:!gap-0 lg:!flex flex-row lg:!justify-between lg:!items-end'
+            }
           >
-            <div className={"flex flex-col lg:!gap-[0.781vw]"}>
+            <div className={'col-span-3 flex flex-col gap-[2.353vw] lg:!gap-[0.781vw]'}>
               <span
                 className={
-                  "text-foreground lg:!text-[1.667vw] font-bold font-plexsans leading-[100%]"
+                  'text-foreground lg:!text-[1.667vw] font-bold font-plexsans leading-[100%]'
                 }
               >
                 ZkNoid Avatars Collection
               </span>
               <span
                 className={
-                  "text-foreground lg:!text-[0.833vw] font-plexsans leading-[110%] lg:!max-w-[20.313vw]"
+                  'text-foreground lg:!text-[0.833vw] font-plexsans leading-[110%] lg:!max-w-[20.313vw]'
                 }
               >
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras
-                nunc enim, venenatis quis eleifend eget, accumsan id libero.
+                The ZkNoid Avatars collection is the first of its kind. The holders of Zknode NFTs
+                not only have access to the image, but also the personality of a reptilian fantasy
+                world. You can become the King, Warrior, Wizard, or Citizen in this world.
               </span>
             </div>
-            <div className={"flex flex-row lg:!gap-[3.073vw]"}>
+            <div
+              className={
+                'col-span-3 grid grid-cols-3 lg:!flex flex-row gap-[2.353vw] lg:!gap-[3.073vw]'
+              }
+            >
               <div
                 className={
-                  "lg:!p-[0.521vw] backdrop-blur-[20px] bg-foreground/10 lg:!rounded-[0.521vw] flex flex-col lg:!gap-[0.521vw]"
+                  'justify-between lg:!justify-normal p-[2.353vw] lg:!p-[0.521vw] backdrop-blur-[20px] bg-foreground/10 rounded-[2.353vw] lg:!rounded-[0.521vw] flex flex-col gap-[2.353vw] lg:!gap-[0.521vw]'
                 }
               >
                 <span
                   className={
-                    "text-foreground lg:!text-[1.667vw] font-plexsans font-bold leading-[100%]"
+                    'text-foreground text-[4.706vw] lg:!text-[1.667vw] font-plexsans font-bold leading-[100%]'
                   }
                 >
                   {nftLength}
                 </span>
                 <span
                   className={
-                    "text-foreground lg:!text-[0.833vw] font-plexsans leading-[110%]"
+                    'text-foreground text-[3.765vw] lg:!text-[0.833vw] font-plexsans leading-[110%]'
                   }
                 >
                   Total Volume
@@ -156,19 +185,19 @@ export default function Page() {
               </div>
               <div
                 className={
-                  "lg:!p-[0.521vw] backdrop-blur-[20px] bg-foreground/10 lg:!rounded-[0.521vw] flex flex-col lg:!gap-[0.521vw]"
+                  'justify-between lg:!justify-normal p-[2.353vw] lg:!p-[0.521vw] backdrop-blur-[20px] bg-foreground/10 rounded-[2.353vw] lg:!rounded-[0.521vw] flex flex-col gap-[2.353vw] lg:!gap-[0.521vw]'
                 }
               >
                 <span
                   className={
-                    "text-foreground lg:!text-[1.667vw] font-plexsans font-bold leading-[100%]"
+                    'text-foreground text-[4.706vw] lg:!text-[1.667vw] font-plexsans font-bold leading-[100%]'
                   }
                 >
                   {nftTotalPrice} MINA
                 </span>
                 <span
                   className={
-                    "text-foreground lg:!text-[0.833vw] font-plexsans leading-[110%]"
+                    'text-foreground text-[3.765vw] lg:!text-[0.833vw] font-plexsans leading-[110%]'
                   }
                 >
                   Total price
@@ -176,19 +205,19 @@ export default function Page() {
               </div>
               <div
                 className={
-                  "lg:!p-[0.521vw] backdrop-blur-[20px] bg-foreground/10 lg:!rounded-[0.521vw] flex flex-col lg:!gap-[0.521vw]"
+                  'p-[2.353vw] lg:!p-[0.521vw] backdrop-blur-[20px] bg-foreground/10 rounded-[2.353vw] lg:!rounded-[0.521vw] flex flex-col justify-between lg:!justify-normal gap-[2.353vw] lg:!gap-[0.521vw]'
                 }
               >
                 <span
                   className={
-                    "text-foreground lg:!text-[1.667vw] font-plexsans font-bold leading-[100%]"
+                    'text-foreground text-[4.706vw] lg:!text-[1.667vw] font-plexsans font-bold leading-[100%]'
                   }
                 >
                   {nftMintedAmount}
                 </span>
                 <span
                   className={
-                    "text-foreground lg:!text-[0.833vw] font-plexsans leading-[110%]"
+                    'text-foreground text-[3.765vw] lg:!text-[0.833vw] font-plexsans leading-[110%]'
                   }
                 >
                   Already Minted
