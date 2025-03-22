@@ -9,7 +9,7 @@ import frogWizardIMG from '@/public/image/nft/frog-wizard.svg';
 import { useEffect, useState } from 'react';
 import { cn } from '@zknoid/sdk/lib/helpers';
 
-export function Trait({
+function Trait({
   title,
   description,
   rarity,
