@@ -1,29 +1,32 @@
-"use client";
+'use client';
 
-import "reflect-metadata";
-import Footer from "@zknoid/sdk/components/widgets/Footer/Footer";
-import Header from "@zknoid/sdk/components/widgets/Header";
-import SetupStoreContext from "../../../../packages/sdk/lib/contexts/SetupStoreContext";
-import { useNetworkStore } from "@zknoid/sdk/lib/stores/network";
-import { api } from "../../trpc/react";
-import { ReactNode } from "react";
+import 'reflect-metadata';
+import Footer from '@zknoid/sdk/components/widgets/Footer/Footer';
+import Header from '@zknoid/sdk/components/widgets/Header';
+import SetupStoreContext from '../../../../packages/sdk/lib/contexts/SetupStoreContext';
+import { useNetworkStore } from '@zknoid/sdk/lib/stores/network';
+import { api } from '../../trpc/react';
+import { ReactNode } from 'react';
 
 export default function Layout({ children }: { children: ReactNode }) {
   const networkStore = useNetworkStore();
   const accountData = api.http.accounts.getAccount.useQuery({
-    userAddress: networkStore.address || "",
+    userAddress: networkStore.address || '',
   }).data;
   const nameMutator = api.http.accounts.setName.useMutation();
   const avatarIdMutator = api.http.accounts.setAvatar.useMutation();
   const gameFeedbackMutator = api.http.ratings.setGameFeedback.useMutation();
   const getGameIdQuery = api.http.ratings.getGameRating;
-  const setFavoriteGameStatusMutation =
-    api.http.favorites.setFavoriteGameStatus.useMutation();
+  const setFavoriteGameStatusMutation = api.http.favorites.setFavoriteGameStatus.useMutation();
   const getFavoriteGamesQuery = api.http.favorites.getFavoriteGames.useQuery({
-    userAddress: networkStore.address || "",
+    userAddress: networkStore.address || '',
   });
   const sendMessageMutation = api.ws.chat.sendMessage.useMutation();
   const onMessageSubscription = api.ws.chat.onMessage;
+  const userTransactions = api.http.txStore.getUserTransactions.useQuery({
+    userAddress: networkStore.address || '',
+  });
+  const addTransaction = api.http.txStore.addTransaction.useMutation();
   return (
     <SetupStoreContext.Provider
       value={{
@@ -32,12 +35,12 @@ export default function Layout({ children }: { children: ReactNode }) {
           avatarId: accountData?.account?.avatarId,
           nameMutator: (name) =>
             nameMutator.mutate({
-              userAddress: networkStore.address || "",
+              userAddress: networkStore.address || '',
               name: name,
             }),
           avatarIdMutator: (avatarId) =>
             avatarIdMutator.mutate({
-              userAddress: networkStore.address || "",
+              userAddress: networkStore.address || '',
               avatarId: avatarId,
             }),
         },
@@ -50,8 +53,8 @@ export default function Layout({ children }: { children: ReactNode }) {
               rating: feedback.rating,
             }),
           getGameRatingQuery: (gameId) =>
-            (getGameIdQuery.useQuery({ gameId: gameId })?.data
-              ?.rating as Record<number, number>) || undefined,
+            (getGameIdQuery.useQuery({ gameId: gameId })?.data?.rating as Record<number, number>) ||
+            undefined,
         },
         favorites: {
           setFavoriteGameStatus: (userAddress, gameId, status) =>
@@ -71,6 +74,15 @@ export default function Layout({ children }: { children: ReactNode }) {
             }),
           onMessageSubscription: ({ roomId, opts }) =>
             onMessageSubscription.useSubscription({ roomId }, opts),
+        },
+        txStore: {
+          userTransactions: userTransactions.data?.transactions as [],
+          addTransaction: (userAddress, txHash, type) =>
+            addTransaction.mutate({
+              userAddress: userAddress,
+              txHash: txHash,
+              type: type,
+            }),
         },
       }}
     >

@@ -1,25 +1,23 @@
-import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
-import { AnyNFTItem, NFTParam } from "../../lib/types/nftTypes";
+import { AnimatePresence, motion } from 'framer-motion';
+import Image from 'next/image';
+import { AnyNFTItem, NFTParam } from '../../lib/types/nftTypes';
 
 const DetailItem = ({ detail }: { detail: NFTParam }) => {
   return (
     <div
       className={
-        "rounded-[0.26vw] bg-[#252525] p-[0.781vw] flex flex-col gap-[0.521vw]"
+        'rounded-[1.176vw] lg:!rounded-[0.26vw] bg-[#252525] p-[2.353vw] lg:!p-[0.781vw] flex flex-col gap-[2.353vw] lg:!gap-[0.521vw]'
       }
     >
-      <div className={"flex flex-row gap-[0.521vw] items-center"}>
-        <span>
-          {detail.title.charAt(0).toUpperCase() + detail.title.slice(1)}
-        </span>
+      <div className={'flex flex-row gap-[2.353vw] lg:!gap-[0.521vw] items-center'}>
+        <span>{detail.title.charAt(0).toUpperCase() + detail.title.slice(1)}</span>
         <svg
           width="18"
           height="18"
           viewBox="0 0 18 18"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="w-[0.938vw] h-[0.938vw]"
+          className="w-[4.235vw] lg:!w-[0.938vw] h-[4.235vw] lg:!h-[0.938vw]"
         >
           <circle cx="9" cy="9" r="9" fill="#373737" />
           <path
@@ -28,17 +26,17 @@ const DetailItem = ({ detail }: { detail: NFTParam }) => {
           />
         </svg>
       </div>
-      <div className={"flex flex-row gap-[0.781vw] items-center"}>
+      <div className={'flex flex-row gap-[3.529vw] lg:!gap-[0.781vw] items-center'}>
         <span
           className={
-            "text-[0.833vw] text-foreground font-plexsans font-semibold leading-[110%]"
+            'text-[3.765vw] lg:!text-[0.833vw] text-foreground font-plexsans font-semibold leading-[110%]'
           }
         >
           {detail.value.charAt(0).toUpperCase() + detail.value.slice(1)}
         </span>
         <span
           className={
-            "text-[0.833vw] text-foreground font-plexsans font-semibold leading-[110%]"
+            'text-[3.765vw] lg:!text-[0.833vw] text-foreground font-plexsans font-semibold leading-[110%]'
           }
         >
           {detail.amount}
@@ -64,21 +62,21 @@ export default function NFTDetailsModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ type: "spring", duration: 0.4, bounce: 0 }}
+          transition={{ type: 'spring', duration: 0.4, bounce: 0 }}
           className={
-            "fixed left-0 top-0 z-50 flex h-full w-full flex-col items-center justify-center backdrop-blur-md p-[10vw] lg:!p-0"
+            'fixed left-0 top-0 z-50 flex h-full w-full flex-col items-center justify-center backdrop-blur-md p-[10vw] lg:!p-0'
           }
           onClick={() => onClose()}
         >
           <div
             className={
-              "lg:!w-[53.646vw] relative flex flex-row rounded-[0.521vw] bg-[#373737] p-[1.042vw] gap-[0.781vw]"
+              'lg:!w-[53.646vw] relative flex flex-col lg:!flex-row rounded-[2.353vw] lg:!rounded-[0.521vw] bg-[#373737] p-[2.353vw] lg:!p-[1.042vw] gap-[2.353vw] lg:!gap-[0.781vw]'
             }
             onClick={(e) => e.stopPropagation()}
           >
             <div
               className={
-                "max-w-[23.438vw] w-full h-full rounded-[0.26vw] overflow-hidden"
+                'lg:!max-w-[23.438vw] w-full h-full rounded-[2.353vw] lg:!rounded-[0.26vw] overflow-hidden'
               }
             >
               <Image
@@ -86,26 +84,23 @@ export default function NFTDetailsModal({
                 alt={`${nft.collectionID} + ${nft} NFT`}
                 width={500}
                 height={500}
-                className={"object-center object-cover"}
+                className={'object-center object-cover'}
               />
             </div>
-            <div className={"flex flex-col gap-[1.042vw] w-full"}>
-              <div
-                className={"flex flex-row w-full items-center justify-between"}
-              >
-                <div className={"flex flex-col gap-[0.26vw]"}>
+            <div className={'flex flex-col gap-[2.353vw] lg:!gap-[1.042vw] w-full'}>
+              <div className={'flex flex-row w-full items-center justify-between'}>
+                <div className={'flex flex-col gap-[1.176vw] lg:!gap-[0.26vw]'}>
                   <span
                     className={
-                      "font-museo text-[1.25vw] font-bold text-foreground"
+                      'font-museo text-[4.706vw] lg:!text-[1.25vw] font-bold text-foreground'
                     }
                   >
-                    {nft.collectionID.charAt(0).toUpperCase() +
-                      nft.collectionID.slice(1)}{" "}
-                    {nft.id < 100 ? "00" + nft.id : "0" + nft.id}
+                    {nft.collectionID.charAt(0).toUpperCase() + nft.collectionID.slice(1)}{' '}
+                    {nft.id < 100 ? '00' + nft.id : '0' + nft.id}
                   </span>
                   <span
                     className={
-                      "text-foreground font-museo text-[1.042vw] font-medium"
+                      'text-foreground font-museo text-[3.765vw] lg:!text-[1.042vw] font-medium'
                     }
                   >
                     Price: {nft.price} MINA
@@ -113,11 +108,11 @@ export default function NFTDetailsModal({
                 </div>
                 <div
                   className={
-                    "bg-[#252525] rounded-[0.26vw] gap-[0.521vw] flex flex-row items-center justify-center py-[0.521vw] px-[2.969vw]"
+                    'bg-[#252525] rounded-[1.176vw] lg:!rounded-[0.26vw] gap-[2.353vw] lg:!gap-[0.521vw] flex flex-row items-center justify-center py-[1.176vw] lg:!py-[0.521vw] px-[2.353vw] lg:!px-[2.969vw]'
                   }
                 >
                   <span
-                    className={"text-[0.833vw] font-plexsans leading-[100%]"}
+                    className={'text-[3.765vw] lg:!text-[0.833vw] font-plexsans leading-[100%]'}
                   >
                     Traits Info
                   </span>
@@ -127,7 +122,7 @@ export default function NFTDetailsModal({
                     viewBox="0 0 15 16"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    className={"w-[0.833vw] h-[0.833vw]"}
+                    className={'w-[5.882vw] lg:!w-[0.833vw] h-[5.882vw] lg:!h-[0.833vw]'}
                   >
                     <circle cx="7.5" cy="8" r="7.5" fill="#F9F8F4" />
                     <path
@@ -137,19 +132,19 @@ export default function NFTDetailsModal({
                   </svg>
                 </div>
               </div>
-              <div className={"grid grid-cols-2 gap-[0.781vw]"}>
+              <div className={'grid grid-cols-2 gap-x-[3.529vw] gap-y-[2.353vw] lg:!gap-[0.781vw]'}>
                 {nft.params.map((item, index) => {
                   return <DetailItem key={index} detail={item} />;
                 })}
               </div>
               <div
                 className={
-                  "mt-auto bg-left-accent cursor-pointer hover:opacity-80 py-[0.417vw] rounded-[0.26vw] flex flex-col items-center justify-center w-full"
+                  'mt-[4.706vw] lg:!mt-auto bg-left-accent cursor-pointer hover:opacity-80 py-[1.882vw] lg:!py-[0.417vw] rounded-[1.176vw] lg:!rounded-[0.26vw] flex flex-col items-center justify-center w-full'
                 }
               >
                 <span
                   className={
-                    "font-museo text-bg-grey font-medium text-[1.042vw] leading-[100%]"
+                    'font-museo text-bg-grey font-medium text-[4.706vw] lg:!text-[1.042vw] leading-[100%]'
                   }
                 >
                   Buy
