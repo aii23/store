@@ -3,94 +3,20 @@
 import NFTStorefront from '../../sections/NFTStorefront';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { algoliasearch, Hit } from 'algoliasearch';
 import { NFT, NFTCollectionIDList } from '../../lib/types/nftTypes';
 import Link from 'next/link';
 import { api } from '../../trpc/react';
-
-const algoliaClient = algoliasearch(
-  process.env.NEXT_PUBLIC_ALGOLIA_PROJECT || '',
-  process.env.NEXT_PUBLIC_ALGOLIA_KEY || ''
-);
-
-const mockedCollectionsQuery = {
-  ZkNoid_test: {
-    version: 'v3',
-    indexName: 'standard-devnet',
-    collectionAddress: 'B62qpqH2ae7wrAzvBH31sacj9yTeCvMhz5Hx8obfm9onQrBwBeTkKVE',
-  },
-  Tileville: {
-    version: 'v2',
-    indexName: 'mainnet',
-    collectionName: 'Tileville',
-  },
-};
 
 export default function Page() {
   const nftLength = 112;
   const nftTotalPrice = 11340;
   const nftMintedAmount = 54;
 
-  const collections = api.http.nft.getCollections.useQuery().data;
-
-  const currentCollectionNFTs = api.http.nft.getCollectionsNFT.useQuery(
-    mockedCollectionsQuery.Tileville
-  ).data;
-
-  useEffect(() => {
-    console.log('Collections info');
-    console.log(collections);
-    console.log(currentCollectionNFTs);
-  }, [collections, currentCollectionNFTs]);
+  const { data: collections } = api.http.nft.getCollections.useQuery();
 
   const [collectionID, setCollectionID] = useState<NFTCollectionIDList>(NFTCollectionIDList.Zknoid);
-  const [collectionItems, setCollectionItems] = useState<NFT[]>([]);
   const [gridMode, setGridMode] = useState<1 | 4 | 6>(4);
-  const [page, setPage] = useState<number>(1);
   const [isMobile, setIsMobile] = useState<boolean>(false);
-
-  useEffect(() => {
-    const itemsPerPage = gridMode == 4 ? 8 : 12;
-    algoliaClient
-      .searchSingleIndex({
-        indexName: 'dev_NFT',
-        searchParams: {
-          facetFilters: [`collection:-${collectionID}`],
-          hitsPerPage: itemsPerPage,
-        },
-      })
-      .then((resp) => {
-        setCollectionItems(
-          resp.hits.map(
-            (value: Hit) =>
-              ({
-                id: value.id,
-                name: 'some',
-                imageType: 'local',
-                image: value.imageID,
-                collectionID: value.collectionID,
-                owner: value.owner,
-                isMinted: value.isMinted,
-                price: value.price,
-                params: [
-                  // TODO: Replace with value.params
-                  { key: 'expertise', value: value.expertise },
-                  { key: 'race', value: value.race },
-                  { key: 'rating', value: value.rating },
-                  { key: 'skin', value: value.skin },
-                  { key: 'edition', value: value.edition },
-                ],
-                collection: 'ZkNoid',
-                raw: undefined,
-              }) as NFT
-          )
-          // .sort((a, b) => a.id - b.id)
-        );
-      })
-      .catch((error) => {
-        console.log('Algolia error', error);
-      });
-  }, [collectionID, gridMode, page]);
 
   useEffect(() => {
     const checkWidth = () => {
@@ -259,11 +185,8 @@ export default function Page() {
       <NFTStorefront
         collectionID={collectionID}
         setCollectionID={(value) => setCollectionID(value)}
-        collectionItems={currentCollectionNFTs ?? []}
         gridMode={gridMode}
         setGridMode={(value) => setGridMode(value)}
-        page={page}
-        setPage={setPage}
       />
     </div>
   );

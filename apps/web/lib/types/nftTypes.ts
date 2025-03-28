@@ -1,10 +1,13 @@
 export enum NFTCollectionIDList {
-  Zknoid = "zknoid",
+  Zknoid = 'zknoid',
 }
 
 export interface NFTParam {
   key: string;
-  value: string;
+  value: {
+    data: string;
+    kind: string;
+  };
 }
 
 export interface NFT {
@@ -17,7 +20,7 @@ export interface NFT {
   price: number;
   params: NFTParam[];
   collection: string;
-  raw: any | undefined;
+  raw: any | undefined | { address: string };
 }
 
 export interface NFTCollection<Items = any> {

@@ -12,32 +12,102 @@ import {
 import { cn } from '@zknoid/sdk/lib/helpers';
 import { NFT, NFTCollectionIDList } from '../../lib/types/nftTypes';
 import NFTDetailsModal from '../../widgets/NFTDetailsModal';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import NFTItem from '../../entities/NFTItem';
+import { api } from '../../trpc/react';
+import { InfinityScroll } from '../../features/InfinityScroll';
+import Skeleton from '@zknoid/sdk/components/shared/Skeleton';
+import LoadSpinner from '../../../../packages/sdk/components/shared/LoadSpinner';
+import { motion } from 'framer-motion';
+
+const mockedCollectionsQuery = {
+  ZkNoid_test: {
+    version: 'v3',
+    indexName: 'standard-devnet',
+    collectionAddress: 'B62qpqH2ae7wrAzvBH31sacj9yTeCvMhz5Hx8obfm9onQrBwBeTkKVE',
+  },
+  Tileville: {
+    version: 'v2',
+    indexName: 'mainnet',
+    collectionName: 'Tileville',
+  },
+};
 
 enum PriceFilter {
   LowToHigh = 'low-to-high',
   HighToLow = 'high-to-low',
 }
 
-export default function NFTStorefront({
+function LoadingComponent({ gridMode }: { gridMode: 1 | 4 | 6 }) {
+  return (
+    <div
+      className={cn(
+        'relative w-[1.563vw] h-[1.563vw] mx-auto mt-[1.563vw]',
+        gridMode === 1 ? 'col-span-1' : gridMode === 4 ? 'col-span-4' : 'col-span-6'
+      )}
+    >
+      <motion.span
+        className={
+          'w-[1.563vw] h-[1.563vw] absolute left-0 top-0 box-border block rounded-[50%] border-[0.365vw] border-solid border-t-left-accent border-[#252525]'
+        }
+        animate={{ rotate: 360 }}
+        transition={{
+          repeat: Infinity,
+          ease: 'easeInOut',
+          duration: 1,
+        }}
+      />
+    </div>
+  );
+}
+
+const NFTStorefront = ({
   collectionID,
   setCollectionID,
-  collectionItems,
   gridMode,
   setGridMode,
-  page,
-  setPage,
 }: {
   collectionID: NFTCollectionIDList;
-  setCollectionID: (collectionID: NFTCollectionIDList) => void;
-  collectionItems: NFT[];
+  setCollectionID: (value: NFTCollectionIDList) => void;
   gridMode: 1 | 4 | 6;
-  setGridMode: (gridMode: 1 | 4 | 6) => void;
-  page: number;
-  setPage: (page: number) => void;
-}) {
+  setGridMode: (value: 1 | 4 | 6) => void;
+}) => {
+  const [page, setPage] = useState<number>(1);
   const [choosenNFTID, setChoosenNFTID] = useState<string | undefined>(undefined);
+  const [hasMore, setHasMore] = useState(false);
+  const [collectionItems, setCollectionItems] = useState<NFT[] | undefined>(undefined);
+
+  const { data: collectionItemsData, isLoading } = api.http.nft.getCollectionsNFT.useQuery({
+    ...mockedCollectionsQuery.Tileville,
+    page: page,
+    hitsPerPage: 20,
+  });
+
+  useEffect(() => {
+    setCollectionItems([]);
+    setPage(1);
+    setHasMore(false);
+  }, [collectionID]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (!collectionItemsData || !('meta' in collectionItemsData)) return;
+
+    if (collectionItemsData.meta.totalPages) {
+      setHasMore(collectionItemsData.meta.totalPages > page);
+    }
+  }, [collectionItemsData, isLoading, page]);
+
+  useEffect(() => {
+    if (!collectionItemsData || !('nfts' in collectionItemsData)) return;
+
+    if (page === 1) {
+      setCollectionItems(collectionItemsData.nfts);
+    } else {
+      setCollectionItems((prev) => [...(prev || []), ...collectionItemsData.nfts]);
+    }
+  }, [collectionItemsData, page]);
+
   return (
     <section
       className={
@@ -265,12 +335,7 @@ export default function NFTStorefront({
           </button>
         </div>
       </div>
-      <div
-        className={cn(
-          'grid gap-[4.706vw] lg:!gap-[0.781vw] grid-cols-2',
-          gridMode == 1 ? 'lg:!grid-cols-1' : gridMode == 4 ? 'lg:!grid-cols-4' : 'lg:!grid-cols-6'
-        )}
-      >
+      <div className="flex flex-col gap-[4.706vw] lg:!gap-[0.781vw]">
         {gridMode == 1 && (
           <div className={'hidden lg:!grid grid-cols-10 border-b border-[#373737] py-[0.521vw]'}>
             <span
@@ -292,15 +357,40 @@ export default function NFTStorefront({
             </span>
           </div>
         )}
-        {collectionItems.map((item, index) => (
-          <NFTItem key={index} gridMode={gridMode} nft={item} setChoosenID={setChoosenNFTID} />
-        ))}
+        {collectionItems && (
+          <InfinityScroll
+            items={collectionItems || []}
+            page={page}
+            setPage={setPage}
+            loading={isLoading}
+            hasMore={hasMore}
+            renderItem={(item: NFT) => (
+              <NFTItem gridMode={gridMode} nft={item} setChoosenID={setChoosenNFTID} />
+            )}
+            loadingComponent={<LoadingComponent gridMode={gridMode} />}
+            className={cn(
+              'grid gap-[4.706vw] lg:!gap-[0.781vw] grid-cols-2',
+              gridMode == 1
+                ? 'lg:!grid-cols-1'
+                : gridMode == 4
+                  ? 'lg:!grid-cols-4'
+                  : 'lg:!grid-cols-6'
+            )}
+          />
+        )}
       </div>
-      <NFTDetailsModal
-        nft={collectionItems.find((item) => item.id === choosenNFTID) || collectionItems[0]}
-        isOpen={choosenNFTID != undefined}
-        onClose={() => setChoosenNFTID(undefined)}
-      />
+
+      {collectionItems && (
+        <NFTDetailsModal
+          nft={
+            collectionItems.find((item) => item.raw.address === choosenNFTID) || collectionItems[0]
+          }
+          isOpen={choosenNFTID != undefined}
+          onClose={() => setChoosenNFTID(undefined)}
+        />
+      )}
     </section>
   );
-}
+};
+
+export default NFTStorefront;

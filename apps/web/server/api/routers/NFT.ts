@@ -1,23 +1,22 @@
-import { CollectionInfo, NftInfo } from "@silvana-one/api";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { CollectionInfo, NftInfo } from '@silvana-one/api';
+import { createTRPCRouter, publicProcedure } from '../trpc';
 
-import { searchClient } from "@algolia/client-search";
-import { version } from "os";
-import { z } from "zod";
-import { ICollection, ISourceData, NFT } from "../../../lib/types/nftTypes";
+import { searchClient } from '@algolia/client-search';
+import { z } from 'zod';
+import { ICollection, ISourceData, NFT } from '../../../lib/types/nftTypes';
 
 const { NFT_ALGOLIA_PROJECT, NFT_ALGOLIA_KEY } = process.env;
-if (NFT_ALGOLIA_PROJECT === undefined)
-  throw new Error("NFT_ALGOLIA_PROJECT is undefined");
-if (NFT_ALGOLIA_KEY === undefined)
-  throw new Error("NFT_ALGOLIA_KEY is undefined");
+if (NFT_ALGOLIA_PROJECT === undefined) throw new Error('NFT_ALGOLIA_PROJECT is undefined');
+if (NFT_ALGOLIA_KEY === undefined) throw new Error('NFT_ALGOLIA_KEY is undefined');
 
 const client = searchClient(NFT_ALGOLIA_PROJECT, NFT_ALGOLIA_KEY);
 
+const HITS_PER_PAGE = 20;
+
 const indexes: ISourceData[] = [
   {
-    name: "mainnetV2",
-    indexName: "mainnet",
+    name: 'mainnetV2',
+    indexName: 'mainnet',
     version: 2,
   },
   // {
@@ -26,8 +25,8 @@ const indexes: ISourceData[] = [
   //   version: 3,
   // },
   {
-    name: "devnetV3",
-    indexName: "standard-devnet",
+    name: 'devnetV3',
+    indexName: 'standard-devnet',
     version: 3,
   },
 ];
@@ -57,62 +56,94 @@ export interface AlgoliaNftList {
 }
 
 const getNFTParams = (hit: any, version: string) => {
-  if (version === "v2") {
+  if (version === 'v2') {
     return Object.entries(hit.properties).map(([k, v]) => ({
       key: k,
       value: v,
     }));
-  } else if (version === "v3") {
+  } else if (version === 'v3') {
     return hit.metadata.traits;
   }
 };
 
+// const getNFT = async (indexName: string, version: string, address: string) => {
+//   const result = await client.searchSingleIndex({
+//     indexName,
+//     searchParams: {
+//       facetFilters: [`address:${address}`],
+//     },
+//   });
+
+//   if (!result) return undefined;
+
+//   const tokenList = result?.hits ? (result as unknown as AlgoliaNftList) : undefined;
+
+//   if (!tokenList) return undefined;
+
+//   return {
+//     id: tokenList?.hits[0].tokenId,
+//     name: tokenList?.hits[0].name,
+//     imageType: tokenList?.hits[0].collectionBaseURL,
+//     image: tokenList?.hits[0].image,
+//     owner: tokenList?.hits[0].owner,
+//     isMinted: true, // All NFT-s from algolia are minted
+//     price: tokenList?.hits[0].price,
+//     params: getNFTParams(tokenList?.hits[0], version),
+//     collection: (tokenList?.hits[0] as any).collection,
+//     raw: tokenList?.hits[0],
+//   } as NFT;
+// };
+
 const getNFTs = async (
   indexName: string,
   version: string,
-  facetFilters: string[]
+  facetFilters: string[],
+  page: number,
+  hitsPerPage?: number
 ) => {
   const result = await client.searchSingleIndex({
     indexName,
     searchParams: {
-      query: "",
-      hitsPerPage: 1000,
+      query: '',
+      hitsPerPage: hitsPerPage ?? HITS_PER_PAGE,
       facetFilters,
+      page: page,
     },
   });
 
   if (!result) return [];
 
-  const tokenList = result?.hits
-    ? (result as unknown as AlgoliaNftList)
-    : undefined;
+  const tokenList = result?.hits ? (result as unknown as AlgoliaNftList) : undefined;
 
-  return (
-    tokenList?.hits.map((hit) => {
-      return {
-        id: hit.tokenId,
-        name: hit.name,
-        imageType: hit.collectionBaseURL,
-        image: hit.image,
-        owner: hit.owner,
-        isMinted: true, // All NFT-s from algolia are minted
-        price: hit.price,
-        params: getNFTParams(hit, version),
-        collection: (hit as any).collection,
-        raw: hit,
-      } as NFT;
-    }) ?? []
-  );
+  return {
+    nfts:
+      tokenList?.hits.map((hit) => {
+        return {
+          id: hit.tokenId,
+          name: hit.name,
+          imageType: hit.collectionBaseURL,
+          image: hit.image,
+          owner: hit.owner,
+          isMinted: true, // All NFT-s from algolia are minted
+          price: hit.price,
+          params: getNFTParams(hit, version),
+          collection: (hit as any).collection,
+          raw: hit,
+        } as NFT;
+      }) ?? [],
+    meta: {
+      page: tokenList?.page ?? 0,
+      totalPages: tokenList?.nbPages ?? 0,
+    },
+  };
 };
 
 ////////////////////////////// V2 //////////////////////////////
 
-const getV2Collections = async (
-  source: ISourceData
-): Promise<ICollection[]> => {
+const getV2Collections = async (source: ISourceData): Promise<ICollection[]> => {
   const result = await client.searchForFacetValues({
     indexName: source.indexName,
-    facetName: "collection",
+    facetName: 'collection',
   });
 
   if (!result) return [];
@@ -122,26 +153,31 @@ const getV2Collections = async (
       name: hit.value,
       count: hit.count,
       source,
-      address: "B62qs2NthDuxAT94tTFg6MtuaP1gaBxTZyNv9D3uQiQciy1VsaimNFT",
+      address: 'B62qs2NthDuxAT94tTFg6MtuaP1gaBxTZyNv9D3uQiQciy1VsaimNFT',
     };
   });
 };
 
-const getV2NFTs = async (indexName: string, collectionName: string) => {
-  return getNFTs(indexName, "v2", [`collection:${collectionName}`]);
+const getV2NFTs = async (
+  indexName: string,
+  collectionName: string,
+  page: number,
+  hitsPerPage?: number
+) => {
+  return getNFTs(indexName, 'v2', [`collection:${collectionName}`], page, hitsPerPage);
 };
 
-const getUserV2NFTs = async (address: string) => {
-  const v2Indexes = indexes
-    .filter((v) => v.version === 2)
-    .map((v) => v.indexName);
+const getUserV2NFTs = async (address: string, page: number, hitsPerPage?: number) => {
+  const v2Indexes = indexes.filter((v) => v.version === 2).map((v) => v.indexName);
 
   let result: NFT[] = [];
 
   for (const indexName of v2Indexes) {
-    const curNFTs = await getNFTs(indexName, "v2", [`owner:${address}`]);
+    const curNFTs = await getNFTs(indexName, 'v2', [`owner:${address}`], page, hitsPerPage);
 
-    result.push(...curNFTs);
+    if (curNFTs && 'nfts' in curNFTs) {
+      result.push(...curNFTs.nfts);
+    }
   }
 
   return result;
@@ -149,24 +185,19 @@ const getUserV2NFTs = async (address: string) => {
 
 ////////////////////////////// V3 //////////////////////////////
 
-const getV3Collections = async (
-  source: ISourceData
-): Promise<ICollection[]> => {
+const getV3Collections = async (source: ISourceData): Promise<ICollection[]> => {
   const result = await client.searchSingleIndex({
     indexName: source.indexName,
     searchParams: {
-      query: "",
-      hitsPerPage: 1000,
-      page: 0,
-      facetFilters: ["status:created", "contractType:collection"],
+      query: '',
+      hitsPerPage: HITS_PER_PAGE,
+      facetFilters: ['status:created', 'contractType:collection'],
     },
   });
 
   if (!result) return [];
 
-  const tokenList = result?.hits
-    ? (result as unknown as AlgoliaCollectionList)
-    : undefined;
+  const tokenList = result?.hits ? (result as unknown as AlgoliaCollectionList) : undefined;
 
   return tokenList!.hits.map((hit) => {
     return {
@@ -178,27 +209,38 @@ const getV3Collections = async (
   });
 };
 
-const getV3NFTs = async (indexName: string, collectionAddress: string) => {
-  return getNFTs(indexName, "v3", [
-    "contractType:nft",
-    `collectionAddress:${collectionAddress}`,
-  ]);
+const getV3NFTs = async (
+  indexName: string,
+  collectionAddress: string,
+  page: number,
+  hitsPerPage?: number
+) => {
+  return getNFTs(
+    indexName,
+    'v3',
+    ['contractType:nft', `collectionAddress:${collectionAddress}`],
+    page,
+    hitsPerPage
+  );
 };
 
-const getUserV3NFTs = async (address: string) => {
-  const v2Indexes = indexes
-    .filter((v) => v.version === 3)
-    .map((v) => v.indexName);
+const getUserV3NFTs = async (address: string, page: number, hitsPerPage?: number) => {
+  const v2Indexes = indexes.filter((v) => v.version === 3).map((v) => v.indexName);
 
   let result: NFT[] = [];
 
   for (const indexName of v2Indexes) {
-    const curNFTs = await getNFTs(indexName, "v3", [
-      "contractType:nft",
-      `owner:${address}`,
-    ]);
+    const curNFTs = await getNFTs(
+      indexName,
+      'v3',
+      ['contractType:nft', `owner:${address}`],
+      page,
+      hitsPerPage
+    );
 
-    result.push(...curNFTs);
+    if (curNFTs && 'nfts' in curNFTs) {
+      result.push(...curNFTs.nfts);
+    }
   }
 
   return result;
@@ -229,13 +271,25 @@ export const nftRouter = createTRPCRouter({
         indexName: z.string(),
         collectionAddress: z.string().optional(),
         collectionName: z.string().optional(),
+        page: z.number(),
+        hitsPerPage: z.number().optional(),
       })
     )
     .query(async ({ input }) => {
-      if (input.version === "v2") {
-        return await getV2NFTs(input.indexName, input.collectionName!);
-      } else if (input.version === "v3") {
-        return await getV3NFTs(input.indexName, input.collectionAddress!);
+      if (input.version === 'v2') {
+        return await getV2NFTs(
+          input.indexName,
+          input.collectionName!,
+          input.page,
+          input.hitsPerPage
+        );
+      } else if (input.version === 'v3') {
+        return await getV3NFTs(
+          input.indexName,
+          input.collectionAddress!,
+          input.page,
+          input.hitsPerPage
+        );
       }
     }),
 
@@ -243,13 +297,15 @@ export const nftRouter = createTRPCRouter({
     .input(
       z.object({
         address: z.string(),
+        page: z.number(),
+        hitsPerPage: z.number().optional(),
       })
     )
     .query(async ({ input }) => {
       let result: NFT[] = [];
 
-      const v2NFTs = await getUserV2NFTs(input.address);
-      const v3NFTs = await getUserV3NFTs(input.address);
+      const v2NFTs = await getUserV2NFTs(input.address, input.page, input.hitsPerPage);
+      const v3NFTs = await getUserV3NFTs(input.address, input.page, input.hitsPerPage);
 
       result.push(...v2NFTs);
       result.push(...v3NFTs);

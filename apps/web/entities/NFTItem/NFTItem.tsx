@@ -1,5 +1,6 @@
 import { NFT } from '../../lib/types/nftTypes';
 import { cn, formatAddress } from '@zknoid/sdk/lib/helpers';
+import { formatUnits } from '@zknoid/sdk/lib/unit';
 import Image from 'next/image';
 
 export default function NFTItem({
@@ -23,7 +24,7 @@ export default function NFTItem({
       )}
     >
       <button
-        onClick={() => setChoosenID(nft.id)}
+        onClick={() => setChoosenID(nft.raw.address)}
         className={cn(
           'hover:opacity-80 overflow-hidden rounded-[1.176vw] lg:!rounded-[0.26vw]',
           gridMode == 1 ? 'lg:!w-[2.344vw] lg:!h-[2.344vw]' : 'w-full h-full'
@@ -31,7 +32,7 @@ export default function NFTItem({
       >
         <Image
           src={nft.image}
-          alt={`${nft.collection} + ${nft} NFT`}
+          alt={`${nft.collection} + ${nft.raw.address} NFT`}
           className={'w-full h-full object-contain object-center'}
           width={1000}
           height={1000}
@@ -51,7 +52,7 @@ export default function NFTItem({
               'hidden lg:!inline-block col-span-2 text-foreground text-[0.833vw] leading-[110%] font-plexsans'
             }
           >
-            {nft.price} MINA
+            {formatUnits(nft.price)} MINA
           </span>
           {nft.owner ? (
             <span
@@ -112,7 +113,7 @@ export default function NFTItem({
                   : 'lg:!text-[0.833vw] leading-[110%] font-plexsans'
             )}
           >
-            {nft.price} MINA
+            {formatUnits(nft.price)} MINA
           </span>
           {nft.isMinted ? (
             <div

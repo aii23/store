@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { NFT, NFTParam } from '../../lib/types/nftTypes';
 
 const DetailItem = ({ detail }: { detail: NFTParam }) => {
+  if (detail.value.kind != 'string') return null; // TODO: Add text support
   return (
     <div
       className={
@@ -32,15 +33,15 @@ const DetailItem = ({ detail }: { detail: NFTParam }) => {
             'text-[3.765vw] lg:!text-[0.833vw] text-foreground font-plexsans font-semibold leading-[110%]'
           }
         >
-          {detail.value.charAt(0).toUpperCase() + detail.value.slice(1)}
+          {detail.value.data.charAt(0).toUpperCase() + detail.value.data.slice(1)}
         </span>
-        <span
+        {/* <span
           className={
             'text-[3.765vw] lg:!text-[0.833vw] text-foreground font-plexsans font-semibold leading-[110%]'
           }
         >
-          {detail.value}
-        </span>
+          {detail.value.data}
+        </span> */}
       </div>
     </div>
   );
@@ -55,6 +56,7 @@ export default function NFTDetailsModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  if (!nft) return null;
   return (
     <AnimatePresence>
       {isOpen && (
