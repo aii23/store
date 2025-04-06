@@ -5,11 +5,13 @@ import { searchClient } from '@algolia/client-search';
 import { z } from 'zod';
 import { ICollection, ISourceData, NFT } from '../../../lib/types/nftTypes';
 
-const { NFT_ALGOLIA_PROJECT, NFT_ALGOLIA_KEY } = process.env;
-if (NFT_ALGOLIA_PROJECT === undefined) throw new Error('NFT_ALGOLIA_PROJECT is undefined');
-if (NFT_ALGOLIA_KEY === undefined) throw new Error('NFT_ALGOLIA_KEY is undefined');
+const { NEXT_PUBLIC_NFT_ALGOLIA_PROJECT, NEXT_PUBLIC_NFT_ALGOLIA_KEY } = process.env;
+if (NEXT_PUBLIC_NFT_ALGOLIA_PROJECT === undefined)
+  throw new Error('NEXT_PUBLIC_NFT_ALGOLIA_PROJECT is undefined');
+if (NEXT_PUBLIC_NFT_ALGOLIA_KEY === undefined)
+  throw new Error('NEXT_PUBLIC_NFT_ALGOLIA_KEY is undefined');
 
-const client = searchClient(NFT_ALGOLIA_PROJECT, NFT_ALGOLIA_KEY);
+const client = searchClient(NEXT_PUBLIC_NFT_ALGOLIA_PROJECT, NEXT_PUBLIC_NFT_ALGOLIA_KEY);
 
 const HITS_PER_PAGE = 20;
 

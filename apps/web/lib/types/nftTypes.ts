@@ -1,5 +1,6 @@
 export enum NFTCollectionIDList {
   Zknoid = 'zknoid',
+  Tileville = 'tileville',
 }
 
 export interface NFTParam {

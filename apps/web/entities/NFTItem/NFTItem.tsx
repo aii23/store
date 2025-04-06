@@ -33,7 +33,7 @@ export default function NFTItem({
         <Image
           src={nft.image}
           alt={`${nft.collection} + ${nft.raw.address} NFT`}
-          className={'w-full h-full object-contain object-center'}
+          className={'w-full h-full object-cover object-center'}
           width={1000}
           height={1000}
         />

@@ -1,6 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import { NFT, NFTParam } from '../../lib/types/nftTypes';
+import { formatUnits } from '@zknoid/sdk/lib/unit';
+import Link from 'next/link';
+import minanftLogo from '../../public/image/partners/minanft.svg';
 
 const DetailItem = ({ detail }: { detail: NFTParam }) => {
   if (detail.value.kind != 'string') return null; // TODO: Add text support
@@ -30,7 +33,7 @@ const DetailItem = ({ detail }: { detail: NFTParam }) => {
       <div className={'flex flex-row gap-[3.529vw] lg:!gap-[0.781vw] items-center'}>
         <span
           className={
-            'text-[3.765vw] lg:!text-[0.833vw] text-foreground font-plexsans font-semibold leading-[110%]'
+            'text-[3.765vw] lg:!text-[0.938vw] text-nowrap text-foreground font-plexsans font-semibold leading-[110%]'
           }
         >
           {detail.value.data.charAt(0).toUpperCase() + detail.value.data.slice(1)}
@@ -52,7 +55,7 @@ export default function NFTDetailsModal({
   isOpen,
   onClose,
 }: {
-  nft: NFT;
+  nft: NFT | undefined;
   isOpen: boolean;
   onClose: () => void;
 }) {
@@ -72,13 +75,13 @@ export default function NFTDetailsModal({
         >
           <div
             className={
-              'lg:!w-[53.646vw] relative flex flex-col lg:!flex-row rounded-[2.353vw] lg:!rounded-[0.521vw] bg-[#373737] p-[2.353vw] lg:!p-[1.042vw] gap-[2.353vw] lg:!gap-[0.781vw]'
+              'max-h-[90vh] lg:!max-h-max relative flex flex-col lg:!flex-row rounded-[2.353vw] lg:!rounded-[0.521vw] bg-[#373737] p-[2.353vw] lg:!p-[1.042vw] gap-[2.353vw] lg:!gap-[0.781vw]'
             }
             onClick={(e) => e.stopPropagation()}
           >
             <div
               className={
-                'lg:!max-w-[23.438vw] w-full h-full rounded-[2.353vw] lg:!rounded-[0.26vw] overflow-hidden'
+                'w-full h-auto lg:!h-full rounded-[2.353vw] lg:!rounded-[0.26vw] overflow-hidden'
               }
             >
               <Image
@@ -86,10 +89,12 @@ export default function NFTDetailsModal({
                 alt={`${nft.collection} + ${nft} NFT`}
                 width={500}
                 height={500}
-                className={'object-center object-cover'}
+                className={'object-center object-cover w-fit h-fit lg:!w-full lg:!h-full'}
               />
             </div>
-            <div className={'flex flex-col gap-[2.353vw] lg:!gap-[1.042vw] w-full'}>
+            <div
+              className={'flex flex-col gap-[2.353vw] lg:!gap-[1.042vw] w-full overflow-y-scroll'}
+            >
               <div className={'flex flex-row w-full items-center justify-between'}>
                 <div className={'flex flex-col gap-[1.176vw] lg:!gap-[0.26vw]'}>
                   <span
@@ -104,35 +109,54 @@ export default function NFTDetailsModal({
                       'text-foreground font-museo text-[3.765vw] lg:!text-[1.042vw] font-medium'
                     }
                   >
-                    Price: {nft.price} MINA
+                    Price: {formatUnits(nft.price)} MINA
                   </span>
                 </div>
-                <div
-                  className={
-                    'bg-[#252525] rounded-[1.176vw] lg:!rounded-[0.26vw] gap-[2.353vw] lg:!gap-[0.521vw] flex flex-row items-center justify-center py-[1.176vw] lg:!py-[0.521vw] px-[2.353vw] lg:!px-[2.969vw]'
-                  }
-                >
-                  <span
-                    className={'text-[3.765vw] lg:!text-[0.833vw] font-plexsans leading-[100%]'}
+                <div className={'flex flex-row gap-[2.353vw] lg:!gap-[0.521vw] items-center'}>
+                  <Link
+                    href={`https://minanft.io/@${nft.name}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={
+                      'flex justify-center items-center w-[8.471vw] lg:!w-[1.875vw] lg:!h-[1.875vw] h-[8.471vw] bg-[#252525] lg:!rounded-[0.26vw] rounded-[1.176vw] hover:opacity-80 cursor-pointer'
+                    }
                   >
-                    Traits Info
-                  </span>
-                  <svg
-                    width="15"
-                    height="16"
-                    viewBox="0 0 15 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={'w-[5.882vw] lg:!w-[0.833vw] h-[5.882vw] lg:!h-[0.833vw]'}
-                  >
-                    <circle cx="7.5" cy="8" r="7.5" fill="#F9F8F4" />
-                    <path
-                      d="M8.0626 10.4133H6.9026L6.80927 3.58667H8.1426L8.0626 10.4133ZM8.15594 13H6.8226V11.6933H8.15594V13Z"
-                      fill="#252525"
+                    <Image
+                      src={minanftLogo}
+                      alt={'Minanft logo'}
+                      className={
+                        'w-[4.706vw] h-[6.118vw] lg:!w-[1.042vw] lg:!h-[1.354vw] object-contain object-center'
+                      }
                     />
-                  </svg>
+                  </Link>
+                  <div
+                    className={
+                      'bg-[#252525] rounded-[1.176vw] lg:!rounded-[0.26vw] gap-[2.353vw] lg:!gap-[0.521vw] flex flex-row items-center justify-center py-[1.176vw] lg:!py-[0.521vw] px-[2.353vw] lg:!px-[2.969vw]'
+                    }
+                  >
+                    <span
+                      className={'text-[3.765vw] lg:!text-[0.833vw] font-plexsans leading-[100%]'}
+                    >
+                      Traits Info
+                    </span>
+                    <svg
+                      width="15"
+                      height="16"
+                      viewBox="0 0 15 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={'w-[5.882vw] lg:!w-[0.833vw] h-[5.882vw] lg:!h-[0.833vw]'}
+                    >
+                      <circle cx="7.5" cy="8" r="7.5" fill="#F9F8F4" />
+                      <path
+                        d="M8.0626 10.4133H6.9026L6.80927 3.58667H8.1426L8.0626 10.4133ZM8.15594 13H6.8226V11.6933H8.15594V13Z"
+                        fill="#252525"
+                      />
+                    </svg>
+                  </div>
                 </div>
               </div>
+
               <div className={'grid grid-cols-2 gap-x-[3.529vw] gap-y-[2.353vw] lg:!gap-[0.781vw]'}>
                 {nft.params.map((item, index) => {
                   return <DetailItem key={index} detail={item} />;
@@ -140,7 +164,7 @@ export default function NFTDetailsModal({
               </div>
               <div
                 className={
-                  'mt-[4.706vw] lg:!mt-auto bg-left-accent cursor-pointer hover:opacity-80 py-[1.882vw] lg:!py-[0.417vw] rounded-[1.176vw] lg:!rounded-[0.26vw] flex flex-col items-center justify-center w-full'
+                  'mt-[4.706vw] lg:!h-[2.6vw] lg:!mt-auto bg-left-accent cursor-pointer hover:opacity-80 py-[1.882vw] lg:!py-[0.417vw] rounded-[1.176vw] lg:!rounded-[0.26vw] flex flex-col items-center justify-center w-full'
                 }
               >
                 <span

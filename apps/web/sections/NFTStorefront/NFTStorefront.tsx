@@ -12,13 +12,12 @@ import {
 import { cn } from '@zknoid/sdk/lib/helpers';
 import { NFT, NFTCollectionIDList } from '../../lib/types/nftTypes';
 import NFTDetailsModal from '../../widgets/NFTDetailsModal';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import NFTItem from '../../entities/NFTItem';
 import { api } from '../../trpc/react';
 import { InfinityScroll } from '../../features/InfinityScroll';
-import Skeleton from '@zknoid/sdk/components/shared/Skeleton';
-import LoadSpinner from '../../../../packages/sdk/components/shared/LoadSpinner';
 import { motion } from 'framer-motion';
+import Search from './Search';
 
 const mockedCollectionsQuery = {
   ZkNoid_test: {
@@ -76,9 +75,18 @@ const NFTStorefront = ({
   const [choosenNFTID, setChoosenNFTID] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(false);
   const [collectionItems, setCollectionItems] = useState<NFT[] | undefined>(undefined);
+  const [searchedItems, setSearchedItems] = useState<NFT[] | undefined>(undefined);
+  const [searchedMeta, setSearchedMeta] = useState<
+    { page: number; totalPages: number } | undefined
+  >(undefined);
+  const [searchStatus, setSearchStatus] = useState<'idle' | 'loading' | 'stalled' | 'error'>(
+    'idle'
+  );
 
   const { data: collectionItemsData, isLoading } = api.http.nft.getCollectionsNFT.useQuery({
-    ...mockedCollectionsQuery.Tileville,
+    ...(collectionID == NFTCollectionIDList.Zknoid
+      ? mockedCollectionsQuery.ZkNoid_test
+      : mockedCollectionsQuery.Tileville),
     page: page,
     hitsPerPage: 20,
   });
@@ -89,7 +97,10 @@ const NFTStorefront = ({
     setHasMore(false);
   }, [collectionID]);
 
+  // For initial data
   useEffect(() => {
+    // if (searchedItems && searchedItems.length != 0) return;
+
     if (isLoading) return;
     if (!collectionItemsData || !('meta' in collectionItemsData)) return;
 
@@ -99,6 +110,8 @@ const NFTStorefront = ({
   }, [collectionItemsData, isLoading, page]);
 
   useEffect(() => {
+    // if (searchedItems && searchedItems.length != 0) return;
+
     if (!collectionItemsData || !('nfts' in collectionItemsData)) return;
 
     if (page === 1) {
@@ -107,6 +120,28 @@ const NFTStorefront = ({
       setCollectionItems((prev) => [...(prev || []), ...collectionItemsData.nfts]);
     }
   }, [collectionItemsData, page]);
+
+  // TODO: Implement search pagination
+
+  // For search
+  // useEffect(() => {
+  //   if (!searchedItems || searchedItems.length == 0 || !searchedMeta) return;
+
+  //   if (searchStatus === 'loading') return;
+  //   if (searchedMeta.totalPages) {
+  //     setHasMore(searchedMeta.totalPages > page);
+  //   }
+  // }, [searchedItems, searchedMeta, page, searchStatus]);
+
+  // useEffect(() => {
+  //   if (!searchedItems || searchedItems.length === 0 || !searchedMeta) return;
+
+  //   if (page === 1) {
+  //     setCollectionItems(searchedItems);
+  //   } else {
+  //     setCollectionItems((prev) => [...(prev || []), ...searchedItems]);
+  //   }
+  // }, [searchedItems, searchedMeta, page]);
 
   return (
     <section
@@ -130,46 +165,21 @@ const NFTStorefront = ({
           <SelectContent>
             <SelectGroup>
               <SelectItem value={NFTCollectionIDList.Zknoid}>ZkNoid</SelectItem>
+              <SelectItem value={NFTCollectionIDList.Tileville}>Tileville</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
-        <div
-          className={
-            'lg:!col-span-7 col-span-2 row-start-1 bg-bg-grey rounded-[2.353vw] lg:!rounded-[0.521vw] p-[4.706vw] lg:!p-[0.781vw] flex flex-row justify-between items-center gap-[2.353vw] lg:!gap-[0.521vw]'
+        <Search
+          collection={
+            collectionID === NFTCollectionIDList.Zknoid
+              ? mockedCollectionsQuery.ZkNoid_test
+              : mockedCollectionsQuery.Tileville
           }
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className={'w-[5.647vw] lg:!w-[1.25vw] h-[5.647vw] lg:!h-[1.25vw]'}
-          >
-            <g opacity="0.5">
-              <path
-                d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z"
-                stroke="#F9F8F4"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M21.0031 21.0002L16.7031 16.7002"
-                stroke="#F9F8F4"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </g>
-          </svg>
-          <input
-            className={
-              'w-full placeholder:font-plexsans placeholder:text-[3.765vw] placeholder:lg:!text-[0.833vw] placeholder:text-foreground/50 placeholder:leading-[110%] font-plexsans text-[3.765vw] lg:!text-[0.833vw] text-foreground leading-[110%] bg-transparent outline-none'
-            }
-            placeholder={'Search...'}
-          />
-        </div>
+          setSearchedItems={setSearchedItems}
+          setSearchedMeta={setSearchedMeta}
+          setSearchStatus={setSearchStatus}
+          page={page}
+        />
         <Select defaultValue={PriceFilter.LowToHigh}>
           <SelectTriggerChevron className="lg:!col-span-3">
             <span>Price: </span>
@@ -357,9 +367,11 @@ const NFTStorefront = ({
             </span>
           </div>
         )}
-        {collectionItems && (
+        {(collectionItems || searchedItems) && (
           <InfinityScroll
-            items={collectionItems || []}
+            items={
+              searchedItems && searchedItems.length > 0 ? searchedItems : collectionItems || []
+            }
             page={page}
             setPage={setPage}
             loading={isLoading}
@@ -380,10 +392,12 @@ const NFTStorefront = ({
         )}
       </div>
 
-      {collectionItems && (
+      {(collectionItems || searchedItems) && (
         <NFTDetailsModal
           nft={
-            collectionItems.find((item) => item.raw.address === choosenNFTID) || collectionItems[0]
+            searchedItems && searchedItems.length != 0
+              ? searchedItems.find((item) => item.raw.address === choosenNFTID)
+              : collectionItems && collectionItems.find((item) => item.raw.address === choosenNFTID)
           }
           isOpen={choosenNFTID != undefined}
           onClose={() => setChoosenNFTID(undefined)}

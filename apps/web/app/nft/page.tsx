@@ -14,7 +14,9 @@ export default function Page() {
 
   const { data: collections } = api.http.nft.getCollections.useQuery();
 
-  const [collectionID, setCollectionID] = useState<NFTCollectionIDList>(NFTCollectionIDList.Zknoid);
+  const [collectionID, setCollectionID] = useState<NFTCollectionIDList>(
+    NFTCollectionIDList.Tileville
+  );
   const [gridMode, setGridMode] = useState<1 | 4 | 6>(4);
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
