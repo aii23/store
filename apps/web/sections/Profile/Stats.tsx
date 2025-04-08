@@ -8,6 +8,7 @@ import drgnCOIN from '../../public/image/tokens/drgn.svg';
 import { StatsItem } from './StatsItem';
 import { MemetokenStats } from './MemetokenStats';
 import { AccountStats } from './lib';
+import { formatUnits } from '@zknoid/sdk/lib/unit';
 
 export function Stats() {
   const networkStore = useNetworkStore();
@@ -22,37 +23,38 @@ export function Stats() {
         <div className={'grid grid-cols-4 gap-[0.781vw]'}>
           <StatsItem
             title="Total rewards"
-            value={stats?.[AccountStats.LotteryTotalRewards] || 0}
+            value={formatUnits(stats?.totalRewards || 0, 9, 0)}
             label="$MINA"
             emoji="💎"
           />
           <StatsItem
             title="Total Wins"
-            value={stats?.[AccountStats.LotteryTotalWins] || 0}
+            value={`${stats?.totalWins || 0}`}
             label="Times"
             emoji="🎉"
           />
           <StatsItem
             title="Total Tickets"
-            value={stats?.[AccountStats.LotteryTotalTickets] || 0}
+            value={`${stats?.totalTickets || 0}`}
             label="Tickets"
             emoji="🎟️"
           />
           <StatsItem
             title="Total Rounds"
-            value={stats?.[AccountStats.LotteryTotalRounds] || 0}
+            value={`${stats?.totalRounds || 0}`}
             label="Rounds"
             emoji="🗂️"
           />
           <StatsItem
             title="Best Reward"
-            value={stats?.[AccountStats.LotteryBestReward] || 0}
+            value={formatUnits(stats?.bestReward || 0, 9)}
             label="$MINA"
             emoji="🏆"
           />
+
           <StatsItem
             title="Win Rate"
-            value={stats?.[AccountStats.LotteryWinRate] || 0}
+            value={`${(100 * (stats?.winRate || 0)).toFixed(2)}`}
             label="%"
             emoji="📈"
           />
