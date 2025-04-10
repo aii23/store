@@ -60,7 +60,7 @@ export function MemetokenStats({
           </span>
           <div className="flex flex-row gap-[0.26vw]">
             <span className="text-[2.604vw] font-plexsans font-semibold leading-[110%] text-foreground">
-              {ownership}
+              {ownership.toFixed(2)}
             </span>
             <span className="mt-auto mb-[0.26vw] text-[0.833vw] font-plexsans leading-[110%] text-foreground">
               %

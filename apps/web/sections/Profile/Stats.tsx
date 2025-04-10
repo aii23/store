@@ -15,6 +15,9 @@ export function Stats() {
   const { data: stats } = api.http.accountStats.getStats.useQuery({
     userAddress: networkStore.address || '',
   });
+  const { data: memeTokenStats } = api.http.accountStats.getMemeTokenStats.useQuery({
+    userAddress: networkStore.address || '',
+  });
 
   return (
     <section className="mt-[1.563vw] flex flex-col gap-[3.125vw]">
@@ -61,8 +64,20 @@ export function Stats() {
         </div>
       </div>
       <div className="flex flex-row gap-[0.781vw]">
-        <MemetokenStats tokenIMG={frogCOIN} token="$FROG" amount={0} place={0} ownership={0} />
-        <MemetokenStats tokenIMG={drgnCOIN} token="$DRGN" amount={0} place={0} ownership={0} />
+        <MemetokenStats
+          tokenIMG={frogCOIN}
+          token="$FROG"
+          amount={memeTokenStats?.frogBalance || 0}
+          place={memeTokenStats?.frogPlace || 0}
+          ownership={memeTokenStats?.frogOwnership || 0}
+        />
+        <MemetokenStats
+          tokenIMG={drgnCOIN}
+          token="$DRGN"
+          amount={memeTokenStats?.dragonBalance || 0}
+          place={memeTokenStats?.dragonPlace || 0}
+          ownership={memeTokenStats?.dragonOwnership || 0}
+        />
       </div>
       <div className="flex flex-col gap-[0.781vw]">
         <div className="grid grid-cols-4 gap-[0.781vw]">

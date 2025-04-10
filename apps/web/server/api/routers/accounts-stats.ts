@@ -2,12 +2,14 @@ import clientPromise from '../../../app/lib/mongodb';
 
 import { z } from 'zod';
 
-import { createTRPCRouter, publicProcedure } from '../../../server/api/trpc';
+import { createTRPCContext, createTRPCRouter, publicProcedure } from '../../../server/api/trpc';
+import { createCaller } from '../root';
 
 const client = await clientPromise;
 const db = client?.db(process.env.MONGODB_DB);
 const oneDayLotteryDB = client?.db(process.env.BACKEND_MONGODB_DB_ONE_DAY);
 const oneWeekLotteryDB = client?.db(process.env.BACKEND_MONGODB_DB);
+const memeTokenDB = client?.db(process.env.MEMETOKENS_DATABASE);
 
 const getLotteryStat = async (userAddress: string) => {
   // Get all users tickets
@@ -84,6 +86,60 @@ export const accountStatsRouter = createTRPCRouter({
       // if (!db) return;
       // return await db.collection('accounts-stats').findOne({ userAddress: input.userAddress });
     }),
+  getMemeTokenStats: publicProcedure.input(z.object({ userAddress: z.string() })).query(
+    async ({
+      input,
+    }): Promise<{
+      dragonPlace?: number;
+      dragonBalance: number;
+      dragonOwnership: number;
+      frogPlace?: number;
+      frogBalance: number;
+      frogOwnership: number;
+    }> => {
+      // Create the caller inside the procedure
+      const caller = createCaller(await createTRPCContext({ headers: new Headers() }));
+
+      const leaderboard = await caller.http.memetokens.getLeaderBoardInfo();
+      const tokensAmounts = await caller.http.memetokens.getBalances();
+
+      const totalDragonBalance =
+        (tokensAmounts!.dragonTokenSupply - tokensAmounts!.dragonPreminted) / 10 ** 9;
+      const totalFrogBalance =
+        (tokensAmounts!.frogTotalSupply - tokensAmounts!.frogPreminted) / 10 ** 9;
+
+      const dragonPlace = leaderboard?.dragonLeaderboard?.findIndex(
+        (holder) => holder.userAddress === input.userAddress
+      );
+      const frogPlace = leaderboard?.frogLeaderboard?.findIndex(
+        (holder) => holder.userAddress === input.userAddress
+      );
+
+      let dragonBalance = 0;
+      let dragonOwnership = 0;
+      let frogBalance = 0;
+      let frogOwnership = 0;
+
+      if (dragonPlace !== -1) {
+        dragonBalance = leaderboard?.dragonLeaderboard?.[dragonPlace]?.amount;
+        dragonOwnership = (dragonBalance / totalDragonBalance) * 100;
+      }
+
+      if (frogPlace !== -1) {
+        frogBalance = leaderboard?.frogLeaderboard?.[frogPlace]?.amount;
+        frogOwnership = (frogBalance / totalFrogBalance) * 100;
+      }
+
+      return {
+        dragonPlace,
+        dragonBalance,
+        dragonOwnership,
+        frogPlace,
+        frogBalance,
+        frogOwnership,
+      };
+    }
+  ),
   setStat: publicProcedure
     .input(z.object({ userAddress: z.string(), key: z.string(), value: z.string() }))
     .mutation(async ({ input }) => {
