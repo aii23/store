@@ -57,7 +57,7 @@ export default function ProfilePage() {
         openAvatarModal={() => setChangeAvatarModal(true)}
         avatarId={currentAvatarId}
       />
-      <Tabs activeTab={activeTab} />
+      <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
       {activeTab === Tab.Stats && <Stats />}
       {activeTab === Tab.Lottery && <LotteryStats />}
       {activeTab === Tab.Transactions && <Transactions />}

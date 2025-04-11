@@ -11,11 +11,11 @@ type TabConfig = {
 
 const tabs: TabConfig[] = [
   { id: Tab.Stats, label: 'Account Stats & NFT' },
-  { id: Tab.Lottery, label: 'Lottery L1 Tickets', disabled: true },
-  { id: Tab.Transactions, label: 'Transactions', disabled: true },
+  { id: Tab.Lottery, label: 'Lottery L1 Tickets' },
+  { id: Tab.Transactions, label: 'Transactions' },
 ];
 
-export function Tabs({ activeTab }: { activeTab: Tab }) {
+export function Tabs({ activeTab, setActiveTab }: { activeTab: Tab; setActiveTab: (tab: Tab) => void }) {
   return (
     <nav className={'mt-[2.604vw] grid grid-cols-4'}>
       {tabs.map((tab) => (
@@ -29,6 +29,7 @@ export function Tabs({ activeTab }: { activeTab: Tab }) {
             activeTab === tab.id && 'border-foreground',
             '[&:not(:first-child)]:pl-[0.781vw]'
           )}
+          onClick={() => setActiveTab(tab.id)}
         >
           {tab.label}
         </button>
