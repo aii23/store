@@ -91,12 +91,9 @@ export function Stats() {
           ))}
         </div>
       </div>
-      <div className="flex flex-row gap-[0.781vw]">
-        <div className={'flex flex-col gap-[0.781vw]'}>
-          <span className={'text-[1.667vw] text-foreground font-museo font-medium'}>
-            Meme tokens
-          </span>
-
+      <div className={'flex flex-col gap-[0.781vw]'}>
+        <span className={'text-[1.667vw] text-foreground font-museo font-medium'}>Meme tokens</span>
+        <div className="flex flex-row gap-[0.781vw]">
           {memeTokens.map((token, index) => (
             <MemetokenStats
               key={index}
