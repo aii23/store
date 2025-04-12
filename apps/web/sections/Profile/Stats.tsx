@@ -109,21 +109,6 @@ export function Stats() {
 
       <div className={'flex flex-col gap-[0.781vw]'}>
         <span className={'text-[1.667vw] text-foreground font-museo font-medium'}>Your NFT</span>
-        <div className={'grid grid-cols-4 gap-[0.781vw]'}>
-          {lotteryStats.map((stat, index) => (
-            <StatsItem
-              key={index}
-              title={stat.title}
-              value={Number(stat.value).toFixed(1)}
-              label={stat.label}
-              emoji={stat.emoji}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className={'flex flex-col gap-[0.781vw]'}>
-        <span className={'text-[1.667vw] text-foreground font-museo font-medium'}>Your NFT</span>
         <div className="grid grid-cols-6 gap-[0.781vw]">
           {[...Array(4)].map((_, index) => (
             <div key={index} className="w-[10vw] h-[10vw] rounded-[0.26vw] overflow-hidden">
