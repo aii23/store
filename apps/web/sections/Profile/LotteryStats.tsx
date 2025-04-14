@@ -7,6 +7,8 @@ import { cn } from '@zknoid/sdk/lib/helpers';
 import LotteryContext from '../../../../packages/games/lottery/lib/contexts/LotteryContext';
 import { ILotteryRound, ILotteryTicket } from '../../../../packages/games/lottery/lib/types';
 
+import { api } from '../../trpc/react';
+
 interface TicketDataItem {
   round: number;
   winCombination: number[];
@@ -25,7 +27,8 @@ export function LotteryStats() {
   const lotteryStore = useWorkerClientStore();
   const networkStore = useNetworkStore();
   const chainStore = useChainStore();
-  const { getRoundsInfosQuery, addClaimRequestMutation } = useContext(LotteryContext);
+  const getAllUserRounds = api.http.lotteryBackend.getAllUserRounds;
+  const { addClaimRequestMutation } = useContext(LotteryContext);
 
   // State variables
   const [onlyLosing, setOnlyLosing] = useState<boolean>(false);
@@ -36,17 +39,14 @@ export function LotteryStats() {
   const [ticketData, setTicketData] = useState<TicketDataItem[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Get all available rounds
-  const roundsToShow =
-    currentRoundId !== undefined
-      ? [currentRoundId]
-      : [...Array(lotteryStore?.lotteryRoundId || 0)].map((_, i) => i);
-
-  const roundInfosData = getRoundsInfosQuery(roundsToShow, { refetchInterval: 5000 });
-  const roundIDSData = getRoundsInfosQuery(
-    [...Array(lotteryStore?.lotteryRoundId || 0)].map((_, i) => i),
+  const roundInfosData = getAllUserRounds.useQuery(
+    { userAddress: networkStore.address! },
     { refetchInterval: 5000 }
-  );
+  ).data;
+  const roundIDSData = getAllUserRounds.useQuery(
+    { userAddress: networkStore.address! },
+    { refetchInterval: 5000 }
+  ).data;
 
   // Process round IDs for dropdown
   useEffect(() => {
@@ -100,7 +100,10 @@ export function LotteryStats() {
             if (ticket.claimed) {
               status = { label: 'Claimed', className: 'text-[#dc8bff] border-[#dc8bff]' };
             } else {
-              status = { label: 'Available to claim', className: 'text-[#d2ff00] border-[#d2ff00]' };
+              status = {
+                label: 'Available to claim',
+                className: 'text-[#d2ff00] border-[#d2ff00]',
+              };
             }
           }
 
