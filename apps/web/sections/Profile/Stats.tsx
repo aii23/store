@@ -79,7 +79,7 @@ export function Stats() {
     <section className="mt-[1.563vw] flex flex-col gap-[3.125vw]">
       <div className={'flex flex-col gap-[0.781vw]'}>
         <span className={'text-[1.667vw] text-foreground font-museo font-medium'}>Lottery L1</span>
-        <div className={'grid grid-cols-4 gap-[0.781vw]'}>
+        <div className={'gap-[0.781vw] flex flex-wrap'}>
           {lotteryStats.map((stat, index) => (
             <StatsItem
               key={index}

@@ -29,7 +29,7 @@ export function LotteryStats() {
   const networkStore = useNetworkStore();
   const chainStore = useChainStore();
   const getAllUserRounds = api.http.lotteryBackend.getAllUserRounds;
-  const { addClaimRequestMutation } = useContext(LotteryContext);
+  const addClaimRequestMutation = api.http.claimRequests.requestClaim.useMutation();
 
   // State variables
   const [onlyLosing, setOnlyLosing] = useState<boolean>(false);
@@ -40,14 +40,17 @@ export function LotteryStats() {
   const [ticketData, setTicketData] = useState<TicketDataItem[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const roundInfosData = getAllUserRounds.useQuery(
+  const roundInfosQuery = getAllUserRounds.useQuery(
     { userAddress: networkStore.address! },
     { refetchInterval: 5000 }
-  ).data;
-  const roundIDSData = getAllUserRounds.useQuery(
+  );
+  const roundInfosData = roundInfosQuery.data;
+  // TODO: why do we need this?
+  const roundIDSQuery = getAllUserRounds.useQuery(
     { userAddress: networkStore.address! },
     { refetchInterval: 5000 }
-  ).data;
+  );
+  const roundIDSData = roundIDSQuery.data;
 
   // Process round IDs for dropdown
   useEffect(() => {
@@ -69,13 +72,28 @@ export function LotteryStats() {
   useEffect(() => {
     if (!roundInfosData || !chainStore.block?.slotSinceGenesis) return;
 
-    const roundInfosArray = Object.values(roundInfosData as Record<number, ILotteryRound>).filter(
-      (round) => round.winningCombination
-    );
+    const roundInfosArray = Object.values(roundInfosData as Record<number, ILotteryRound>)
+      .filter((round) => round.winningCombination)
+      .map((round) => {
+        return {
+          ...round,
+          tickets: round.tickets.map((ticket, index) => ({
+            ...ticket,
+            ticketId: index,
+          })),
+        };
+      });
+
+    console.log('roundInfosArray', roundInfosArray);
     setRoundInfos(roundInfosArray);
 
     // Format data for display
     const formattedTickets = roundInfosArray.flatMap((round) => {
+      // Skip rounds that don't match the filter if a specific round is selected
+      if (currentRoundId !== undefined && round.id !== currentRoundId) {
+        return [];
+      }
+
       return round.tickets
         .filter((ticket: ILotteryTicket) => {
           const isOwner = ticket.owner === networkStore.address;
@@ -87,7 +105,7 @@ export function LotteryStats() {
 
           return true;
         })
-        .map((ticket: ILotteryTicket, ticketIndex: number): TicketDataItem => {
+        .map((ticket: ILotteryTicket & { ticketId: number }): TicketDataItem => {
           // Find matched indices by comparing ticket numbers with winning combination
           const matchedIndices = ticket.numbers
             .map((num: number, idx: number) =>
@@ -100,6 +118,8 @@ export function LotteryStats() {
           if (ticket.funds > BigInt(0)) {
             if (ticket.claimed) {
               status = { label: 'Claimed', className: 'text-[#dc8bff] border-[#dc8bff]' };
+            } else if (ticket.claimRequested) {
+              status = { label: 'Claim requested', className: 'text-[#d2ff00] border-[#d2ff00]' };
             } else {
               status = {
                 label: 'Available to claim',
@@ -117,7 +137,7 @@ export function LotteryStats() {
             rewards: ticket.funds > BigInt(0) ? `${Number(ticket.funds) / 10 ** 9} MINA` : '0 MINA',
             status: status,
             plotteryAddress: round.plotteryAddress,
-            ticketId: ticketIndex,
+            ticketId: ticket.ticketId,
             claimed: ticket.claimed,
             hash: ticket.hash,
           };
@@ -140,7 +160,13 @@ export function LotteryStats() {
       roundId,
       ticketId,
     };
-    addClaimRequestMutation(claimRequest);
+    console.log('claimRequest', claimRequest);
+    addClaimRequestMutation.mutate(claimRequest, {
+      onSuccess: () => {
+        roundInfosQuery.refetch();
+        roundIDSQuery.refetch();
+      },
+    });
   };
 
   return (
@@ -277,6 +303,7 @@ export function LotteryStats() {
                         className={`w-[1.3542vw] h-[1.3542vw] ${
                           ticket.matchedIndices.includes(idx)
                             ? 'border border-left-accent text-neutral-800 bg-left-accent'
+                            ? 'bg-[#d2ff00] border border-[#d2ff00] text-neutral-800'
                             : 'border border-[#F9F8F4] text-[#F9F8F4]'
                         } rounded flex items-center justify-center`}
                       >
@@ -291,7 +318,7 @@ export function LotteryStats() {
                   {ticket.status ? (
                     ticket.status.label === 'Available to claim' ? (
                       <button
-                        className="text-neutral-800 text-xs whitespace-nowrap bg-d2ff00 rounded-full py-1 px-2 h-fit cursor-pointer hover:opacity-80"
+                        className={`${ticket.status.className} text-xs whitespace-nowrap rounded-full py-1 px-2 h-fit cursor-pointer hover:opacity-80`}
                         onClick={() => handleClaim(ticket.round, ticket.ticketId)}
                       >
                         {ticket.status.label}
