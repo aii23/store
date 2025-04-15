@@ -190,7 +190,7 @@ export function LotteryStats() {
           <div className="flex items-center gap-2" onClick={() => setOnlyLosing(!onlyLosing)}>
             <div
               className={cn('w-[0.9375vw] h-[0.9375vw] border border-[#F9F8F4] rounded', {
-                'bg-d2ff00 border-d2ff00': onlyLosing,
+                'bg-[#d2ff00] border-[#d2ff00]': onlyLosing,
               })}
             ></div>
             <span className="text-[#F9F8F4] font-plexsans">Only losing</span>
@@ -199,7 +199,7 @@ export function LotteryStats() {
           <div className="flex items-center gap-2" onClick={() => setOnlyClaimable(!onlyClaimable)}>
             <div
               className={cn('w-[0.9375vw] h-[0.9375vw] border border-[#F9F8F4] rounded', {
-                'bg-d2ff00 border-d2ff00': onlyClaimable,
+                'bg-[#d2ff00] border-[#d2ff00]': onlyClaimable,
               })}
             ></div>
             <span className="text-[#F9F8F4] font-plexsans">Only claimable</span>
@@ -287,7 +287,7 @@ export function LotteryStats() {
                         key={idx}
                         className={`w-[1.3542vw] h-[1.3542vw] ${
                           ticket.matchedIndices.includes(idx)
-                            ? 'bg-d2ff00 border border-d2ff00 text-neutral-800'
+                            ? 'bg-[#d2ff00] border border-[#d2ff00] text-neutral-800'
                             : 'border border-[#F9F8F4] text-[#F9F8F4]'
                         } rounded flex items-center justify-center`}
                       >
