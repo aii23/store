@@ -226,7 +226,7 @@ export function LotteryStats() {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               <span className="text-[#F9F8F4] mr-2">
-                {currentRoundId !== undefined ? `Lottery round ${currentRoundId}` : 'Choose Round'}
+                {currentRoundId !== undefined ? `Lottery round ${currentRoundId}` : 'All rounds'}
               </span>
               <svg
                 width="24"
@@ -250,6 +250,16 @@ export function LotteryStats() {
 
             {isDropdownOpen && (
               <div className="absolute top-full right-0 mt-1 w-full max-h-[15.625vw] overflow-y-auto bg-neutral-800 rounded-[0.5208vw] shadow-lg z-10">
+                <div
+                  key="all-rounds"
+                  className="flex justify-between items-center px-4 py-3 hover:bg-neutral-700 cursor-pointer"
+                  onClick={() => {
+                    setCurrentRoundId(undefined);
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  <span className="text-[#F9F8F4]">All rounds</span>
+                </div>
                 {roundIds.map((round, index) => (
                   <div
                     key={index}
