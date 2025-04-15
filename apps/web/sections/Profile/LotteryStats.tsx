@@ -303,7 +303,6 @@ export function LotteryStats() {
                         className={`w-[1.3542vw] h-[1.3542vw] ${
                           ticket.matchedIndices.includes(idx)
                             ? 'border border-left-accent text-neutral-800 bg-left-accent'
-                            ? 'bg-[#d2ff00] border border-[#d2ff00] text-neutral-800'
                             : 'border border-[#F9F8F4] text-[#F9F8F4]'
                         } rounded flex items-center justify-center`}
                       >
