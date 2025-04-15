@@ -88,6 +88,11 @@ export function LotteryStats() {
 
     // Format data for display
     const formattedTickets = roundInfosArray.flatMap((round) => {
+      // Skip rounds that don't match the filter if a specific round is selected
+      if (currentRoundId !== undefined && round.id !== currentRoundId) {
+        return [];
+      }
+
       return round.tickets
         .filter((ticket: ILotteryTicket) => {
           const isOwner = ticket.owner === networkStore.address;
