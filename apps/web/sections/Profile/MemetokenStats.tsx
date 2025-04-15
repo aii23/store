@@ -29,7 +29,7 @@ export function MemetokenStats({
             Amount
           </span>
           <div className="flex flex-row gap-[0.26vw]">
-            <span className="text-[2.604vw] font-plexsans font-semibold leading-[110%] text-foreground">
+            <span className="text-[1.979vw] font-plexsans font-semibold leading-[110%] text-foreground">
               {amount % 1000 === 0 ? amount / 1000 + 'k' : (amount / 1000).toFixed(2) + 'k'}
             </span>
             <span className="mt-auto mb-[0.26vw] text-[0.833vw] font-plexsans leading-[110%] text-foreground">
@@ -44,7 +44,7 @@ export function MemetokenStats({
             Place in Leaderboard
           </span>
           <div className="flex flex-row gap-[0.26vw]">
-            <span className="text-[2.604vw] font-plexsans font-semibold leading-[110%] text-foreground">
+            <span className="text-[1.979vw] font-plexsans font-semibold leading-[110%] text-foreground">
               {place}
             </span>
             <span className="mt-auto mb-[0.26vw] text-[0.833vw] font-plexsans leading-[110%] text-foreground">
@@ -59,7 +59,7 @@ export function MemetokenStats({
             Ownership Percentage
           </span>
           <div className="flex flex-row gap-[0.26vw]">
-            <span className="text-[2.604vw] font-plexsans font-semibold leading-[110%] text-foreground">
+            <span className="text-[1.979vw] font-plexsans font-semibold leading-[110%] text-foreground">
               {ownership.toFixed(2)}
             </span>
             <span className="mt-auto mb-[0.26vw] text-[0.833vw] font-plexsans leading-[110%] text-foreground">
