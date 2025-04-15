@@ -8,6 +8,7 @@ import LotteryContext from '../../../../packages/games/lottery/lib/contexts/Lott
 import { ILotteryRound, ILotteryTicket } from '../../../../packages/games/lottery/lib/types';
 
 import { api } from '../../trpc/react';
+import Link from 'next/link';
 
 interface TicketDataItem {
   round: number;
@@ -146,7 +147,10 @@ export function LotteryStats() {
     <div className="w-full pt-[1.5625vw]">
       {/* Table Header & Controls */}
       <div className="flex justify-between items-center mb-[1.5625vw]">
-        <button className="flex items-center gap-4 bg-[#B58BE5] text-neutral-800 rounded px-6 py-3">
+        <Link
+          href="/games/lottery/global"
+          className="flex items-center gap-4 bg-[#B58BE5] text-neutral-800 rounded px-6 py-3 hover:opacity-80 cursor-pointer"
+        >
           <svg
             width="35"
             height="34"
@@ -163,26 +167,32 @@ export function LotteryStats() {
           </svg>
 
           <span className="text-2xl font-medium">Play Lottery</span>
-        </button>
+        </Link>
 
         <div className="flex gap-[2.6042vw] items-center">
-          <div className="flex items-center gap-2" onClick={() => setOnlyLosing(!onlyLosing)}>
+          <button
+            className="hover:opacity-80 cursor-pointer flex items-center gap-2"
+            onClick={() => setOnlyLosing(!onlyLosing)}
+          >
             <div
               className={cn('w-[0.9375vw] h-[0.9375vw] border border-[#F9F8F4] rounded', {
-                'bg-d2ff00 border-d2ff00': onlyLosing,
+                'bg-[#d2ff00] border-[#d2ff00]': onlyLosing,
               })}
             ></div>
             <span className="text-[#F9F8F4] font-plexsans">Only losing</span>
-          </div>
+          </button>
 
-          <div className="flex items-center gap-2" onClick={() => setOnlyClaimable(!onlyClaimable)}>
+          <button
+            className="hover:opacity-80 cursor-pointer flex items-center gap-2"
+            onClick={() => setOnlyClaimable(!onlyClaimable)}
+          >
             <div
               className={cn('w-[0.9375vw] h-[0.9375vw] border border-[#F9F8F4] rounded', {
-                'bg-d2ff00 border-d2ff00': onlyClaimable,
+                'bg-[#d2ff00] border-[#d2ff00]': onlyClaimable,
               })}
             ></div>
             <span className="text-[#F9F8F4] font-plexsans">Only claimable</span>
-          </div>
+          </button>
 
           <div className="relative">
             <div
@@ -242,7 +252,7 @@ export function LotteryStats() {
         <div className="px-4 font-plexsans">Round</div>
         <div className="px-4 font-plexsans">Win combination</div>
         <div className="px-4 font-plexsans">Ticket Number</div>
-        <div className="px-4 font-plexsans">Quantity</div>
+        <div className="px-4 font-plexsans text-center">Quantity</div>
         <div className="px-4 font-plexsans">Rewards</div>
         <div className="px-4 font-plexsans text-end">Status</div>
       </div>
@@ -266,7 +276,7 @@ export function LotteryStats() {
                         key={idx}
                         className={`w-[1.3542vw] h-[1.3542vw] ${
                           ticket.matchedIndices.includes(idx)
-                            ? 'bg-d2ff00 border border-d2ff00 text-neutral-800'
+                            ? 'border border-left-accent text-neutral-800 bg-left-accent'
                             : 'border border-[#F9F8F4] text-[#F9F8F4]'
                         } rounded flex items-center justify-center`}
                       >
@@ -275,8 +285,8 @@ export function LotteryStats() {
                     ))}
                   </div>
                 </div>
-                <div className="px-4">{ticket.quantity}</div>
-                <div className="px-4">{ticket.rewards}</div>
+                <div className="px-4 text-center">{ticket.quantity}</div>
+                <div className="px-4">{Number(ticket.rewards.split(' ')[0]).toFixed(2)} MINA</div>
                 <div className="px-4 justify-self-end">
                   {ticket.status ? (
                     ticket.status.label === 'Available to claim' ? (

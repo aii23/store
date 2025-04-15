@@ -9,6 +9,14 @@ export function StatsItem({
   label: string;
   emoji: string;
 }) {
+  const roundedValue = Math.round(Number(value) / 50) * 50;
+
+  const formattedValue =
+    Number(value) >= 100
+      ? Number(roundedValue) % 1000 === 0
+        ? `${roundedValue / 1000}k`
+        : `${(roundedValue / 1000).toFixed(1)}k`
+      : Number(value);
   return (
     <div
       className={
@@ -24,7 +32,7 @@ export function StatsItem({
         </span>
         <div className="flex flex-row gap-[0.26vw]">
           <span className="text-[2.604vw] font-plexsans font-semibold leading-[110%] text-foreground">
-            {value}
+            {formattedValue}
           </span>
           <span className="mt-auto mb-[0.26vw] text-[0.833vw] font-plexsans leading-[110%] text-foreground">
             {label}
