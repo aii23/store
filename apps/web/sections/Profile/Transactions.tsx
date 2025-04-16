@@ -1,21 +1,47 @@
+import { useNetworkStore } from '@zknoid/sdk/lib/stores/network';
+import { api } from '../../trpc/react';
+import { useEffect, useState } from 'react';
+import { getZkAppTxByHash } from '@zknoid/sdk/lib/api/getZkAppTxByHash';
+import { formatAddress } from '@zknoid/sdk/lib/helpers';
+
+interface Tx {
+  status: string;
+  timestamp: number;
+  txHash: string;
+}
+
 export function Transactions() {
-  const transactions = [
-    {
-      id: '054a0fdf-df84-4880-82c0-1ce0760abf81',
-      status: 'success',
-      date: '15th Sept, 12:00',
-    },
-    {
-      id: '054a0fdf-df84-4880-82c0-1ce0760abf81',
-      status: 'pending',
-      date: '15th Sept, 12:00',
-    },
-    {
-      id: '054a0fdf-df84-4880-82c0-1ce0760abf81',
-      status: 'failed',
-      date: '15th Sept, 12:00',
-    },
-  ];
+  const networkStore = useNetworkStore();
+  const transactions = api.http.txStore.getUserTransactions.useQuery({
+    userAddress: networkStore.address!,
+  }).data?.transactions;
+
+  const [txs, setTxs] = useState<Tx[]>([]);
+
+  useEffect(() => {
+    if (!transactions) return;
+
+    console.log(transactions);
+
+    setTxs(transactions as unknown as Tx[]);
+
+    const fetchTxs = async () => {
+      const promises = transactions?.map(async (item) => {
+        const transaction = await getZkAppTxByHash(item.txHash);
+        return {
+          ...item,
+          status: transaction.txStatus,
+          timestamp: transaction.timestamp,
+        };
+      });
+      if (!promises) return;
+      const newTxs = await Promise.all(promises);
+
+      console.log(newTxs);
+      setTxs(newTxs as unknown as Tx[]);
+    };
+    fetchTxs();
+  }, [transactions]);
 
   return (
     <div className="w-full pt-[1.5625vw] font-plexsans">
@@ -26,12 +52,12 @@ export function Transactions() {
       </div>
       <div className="h-px w-full bg-[#373737] mb-3"></div>
       <div className="space-y-3">
-        {transactions.map((transaction, index) => (
+        {txs?.map((transaction, index) => (
           <div
             key={index}
             className="grid grid-cols-3 gap-4 px-[0.7813vw] py-[0.5208vw] bg-[#212121] rounded-xl text-sm text-[#f9f8f4]"
           >
-            <div className="truncate flex items-center">{transaction.id}</div>
+            <div className="truncate flex items-center">{formatAddress(transaction.txHash)}</div>
             <div className="flex justify-center">
               {transaction.status === 'success' && (
                 <span className="bg-[#00b708] text-[#212121] px-4 py-1 rounded-[0.2604vw] text-center">
@@ -49,7 +75,7 @@ export function Transactions() {
                 </span>
               )}
             </div>
-            <div className="text-right flex items-center justify-end">{transaction.date}</div>
+            <div className="text-right flex items-center justify-end">{transaction.timestamp}</div>
           </div>
         ))}
       </div>
