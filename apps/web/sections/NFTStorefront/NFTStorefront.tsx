@@ -18,6 +18,7 @@ import { api } from '../../trpc/react';
 import { InfinityScroll } from '../../features/InfinityScroll';
 import { motion } from 'framer-motion';
 import Search from './Search';
+import { useSearchParams } from 'next/navigation';
 
 const mockedCollectionsQuery = {
   ZkNoid_test: {
@@ -71,6 +72,7 @@ const NFTStorefront = ({
   gridMode: 1 | 4 | 6;
   setGridMode: (value: 1 | 4 | 6) => void;
 }) => {
+  const params = useSearchParams();
   const [page, setPage] = useState<number>(1);
   const [choosenNFTID, setChoosenNFTID] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(false);
@@ -82,6 +84,7 @@ const NFTStorefront = ({
   const [searchStatus, setSearchStatus] = useState<'idle' | 'loading' | 'stalled' | 'error'>(
     'idle'
   );
+  const collectionName = params.get('collection');
 
   const { data: collectionItemsData, isLoading } = api.http.nft.getCollectionsNFT.useQuery({
     ...(collectionID == NFTCollectionIDList.Zknoid
@@ -90,6 +93,12 @@ const NFTStorefront = ({
     page: page,
     hitsPerPage: 20,
   });
+
+  useEffect(() => {
+    if (collectionName) {
+      setCollectionID(collectionName as NFTCollectionIDList);
+    }
+  }, [collectionName]);
 
   useEffect(() => {
     setCollectionItems([]);
