@@ -24,6 +24,40 @@ interface TicketDataItem {
   hash: string;
 }
 
+interface CheckboxProps {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+}
+
+function Checkbox({ checked, onChange, label }: CheckboxProps) {
+  return (
+    <button className="hover:opacity-80 cursor-pointer flex items-center gap-2" onClick={onChange}>
+      <div
+        className={cn(
+          'w-[0.9375vw] h-[0.9375vw] border border-[#F9F8F4] rounded flex items-center justify-center',
+          {
+            'bg-[#d2ff00] border-[#d2ff00]': checked,
+          }
+        )}
+      >
+        {checked && (
+          <svg
+            width="14"
+            height="10"
+            viewBox="0 0 14 10"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M1 4L5.5 8.5L13 1" stroke="#252525" />
+          </svg>
+        )}
+      </div>
+      <span className="text-[#F9F8F4] font-plexsans">{label}</span>
+    </button>
+  );
+}
+
 export function LotteryStats() {
   const lotteryStore = useWorkerClientStore();
   const networkStore = useNetworkStore();
@@ -198,29 +232,17 @@ export function LotteryStats() {
         </Link>
 
         <div className="flex gap-[2.6042vw] items-center">
-          <button
-            className="hover:opacity-80 cursor-pointer flex items-center gap-2"
-            onClick={() => setOnlyLosing(!onlyLosing)}
-          >
-            <div
-              className={cn('w-[0.9375vw] h-[0.9375vw] border border-[#F9F8F4] rounded', {
-                'bg-[#d2ff00] border-[#d2ff00]': onlyLosing,
-              })}
-            ></div>
-            <span className="text-[#F9F8F4] font-plexsans">Only losing</span>
-          </button>
+          <Checkbox
+            checked={onlyLosing}
+            onChange={() => setOnlyLosing(!onlyLosing)}
+            label="Only losing"
+          />
 
-          <button
-            className="hover:opacity-80 cursor-pointer flex items-center gap-2"
-            onClick={() => setOnlyClaimable(!onlyClaimable)}
-          >
-            <div
-              className={cn('w-[0.9375vw] h-[0.9375vw] border border-[#F9F8F4] rounded', {
-                'bg-[#d2ff00] border-[#d2ff00]': onlyClaimable,
-              })}
-            ></div>
-            <span className="text-[#F9F8F4] font-plexsans">Only claimable</span>
-          </button>
+          <Checkbox
+            checked={onlyClaimable}
+            onChange={() => setOnlyClaimable(!onlyClaimable)}
+            label="Only claimable"
+          />
 
           <div className="relative">
             <div
