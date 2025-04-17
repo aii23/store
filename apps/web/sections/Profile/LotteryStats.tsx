@@ -192,7 +192,9 @@ export function LotteryStats() {
             />
           </svg>
 
-          <span className="text-2xl font-medium">Play Lottery</span>
+          <Link href="/games/lottery/global" className="text-2xl font-medium">
+            Play Lottery
+          </Link>
         </Link>
 
         <div className="flex gap-[2.6042vw] items-center">
