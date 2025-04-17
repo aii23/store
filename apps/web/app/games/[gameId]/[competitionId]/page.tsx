@@ -13,15 +13,16 @@ const GamePageWrapper = dynamic(
   }
 );
 
-export default function Home({
+export default async function Home({
   params,
 }: {
-  params: { competitionId: string; gameId: string };
+  params: Promise<{ competitionId: string; gameId: string }>;
 }) {
+  const { competitionId, gameId } = await params;
   return (
     <GamePageWrapper
-      gameId={params.gameId}
-      competitionId={params.competitionId}
+      gameId={gameId}
+      competitionId={competitionId}
       zkNoidConfig={zkNoidConfig}
     />
   );

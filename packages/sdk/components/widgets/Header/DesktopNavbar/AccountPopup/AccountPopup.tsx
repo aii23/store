@@ -34,6 +34,8 @@ import Image from 'next/image';
 import SetupStoreContext from '../../../../../lib/contexts/SetupStoreContext';
 import { algoliasearch } from 'algoliasearch';
 import TxStore from '../../TxStore';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const client = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_PROJECT || '',
@@ -78,6 +80,7 @@ export default function AccountPopup({
   const bridgeStore = useBridgeStore();
   const notificationStore = useNotificationStore();
   const { account } = useContext(SetupStoreContext);
+  const router = useRouter();
 
   const [linkCopied, setLinkCopied] = useState<boolean>(false);
   const [name, setName] = useState<string | undefined>(undefined);
@@ -515,8 +518,8 @@ export default function AccountPopup({
           </div>
           <AccountPopupBalance />
           <div className={'flex w-full flex-row gap-1.5'}>
-            <button
-              onClick={() => setIsTxStoreOpen(true)}
+            <Link
+              href="/profile"
               className={
                 'group flex w-full cursor-pointer flex-col items-center justify-center gap-2.5 rounded-[5px] border border-bg-dark bg-bg-dark p-1 text-foreground hover:bg-right-accent hover:text-bg-dark'
               }
@@ -539,8 +542,8 @@ export default function AccountPopup({
                   className={'group-hover:fill-bg-dark'}
                 />
               </svg>
-              <span className={'font-museo text-[16px]/[16px] font-medium'}>Transaction Store</span>
-            </button>
+              <span className={'font-museo text-[16px]/[16px] font-medium'}>Profile</span>
+            </Link>
             <button
               className={
                 'group flex w-full cursor-pointer flex-col items-center justify-center gap-2.5 rounded-[5px] border border-bg-dark bg-bg-dark p-1 text-foreground hover:bg-right-accent hover:text-bg-dark'

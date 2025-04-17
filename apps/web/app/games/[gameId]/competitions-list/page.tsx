@@ -13,8 +13,13 @@ const CompetitionsListPage = dynamic(
   }
 );
 
-export default function Home({ params }: { params: { gameId: string } }) {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ gameId: string }>;
+}) {
+  const { gameId } = await params;
   return (
-    <CompetitionsListPage gameId={params.gameId} zkNoidConfig={zkNoidConfig} />
+    <CompetitionsListPage gameId={gameId} zkNoidConfig={zkNoidConfig} />
   );
 }
