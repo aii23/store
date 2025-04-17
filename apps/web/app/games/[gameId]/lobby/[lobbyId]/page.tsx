@@ -12,15 +12,16 @@ const Lobby = dynamic(
   }
 );
 
-export default function Home({
+export default async function Home({
   params,
 }: {
-  params: { gameId: string; lobbyId: string };
+  params: Promise<{ gameId: string; lobbyId: string }>;
 }) {
+  const { gameId, lobbyId } = await params;
   return (
     <Lobby
-      gameId={params.gameId}
-      lobbyId={params.lobbyId}
+      gameId={gameId}
+      lobbyId={lobbyId}
       zkNoidConfig={zkNoidConfig}
     />
   );
