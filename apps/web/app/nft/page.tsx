@@ -3,7 +3,7 @@
 import NFTStorefront from '../../sections/NFTStorefront';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { NFT, NFTCollectionIDList } from '../../lib/types/nftTypes';
+import { NFTCollectionIDList } from '../../lib/types/nftTypes';
 import Link from 'next/link';
 import { api } from '../../trpc/react';
 

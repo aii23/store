@@ -12,7 +12,7 @@ import {
 import { cn } from '@zknoid/sdk/lib/helpers';
 import { NFT, NFTCollectionIDList } from '../../lib/types/nftTypes';
 import NFTDetailsModal from '../../widgets/NFTDetailsModal';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import NFTItem from '../../entities/NFTItem';
 import { api } from '../../trpc/react';
 import { InfinityScroll } from '../../features/InfinityScroll';
@@ -61,7 +61,7 @@ function LoadingComponent({ gridMode }: { gridMode: 1 | 4 | 6 }) {
   );
 }
 
-const NFTStorefront = ({
+const NFTStorefrontWithSuspense = ({
   collectionID,
   setCollectionID,
   gridMode,
@@ -416,4 +416,15 @@ const NFTStorefront = ({
   );
 };
 
-export default NFTStorefront;
+export default function NFTStorefront(props: {
+  collectionID: NFTCollectionIDList;
+  setCollectionID: (value: NFTCollectionIDList) => void;
+  gridMode: 1 | 4 | 6;
+  setGridMode: (value: 1 | 4 | 6) => void;
+}) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NFTStorefrontWithSuspense {...props} />
+    </Suspense>
+  );
+}
