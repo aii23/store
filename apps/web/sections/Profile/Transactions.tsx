@@ -10,6 +10,13 @@ interface Tx {
   txHash: string;
 }
 
+function getTimeString(timestamp: number) {
+  const pad = (n: number, s = 2) => `${new Array(s).fill(0)}${n}`.slice(-s);
+  const d = new Date(timestamp);
+
+  return `${pad(d.getFullYear(), 4)}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
 export function Transactions() {
   const networkStore = useNetworkStore();
   const transactions = api.http.txStore.getUserTransactions.useQuery({
@@ -18,29 +25,72 @@ export function Transactions() {
 
   const [txs, setTxs] = useState<Tx[]>([]);
 
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
   useEffect(() => {
     if (!transactions) return;
 
-    console.log(transactions);
-
     setTxs(transactions as unknown as Tx[]);
 
-    const fetchTxs = async () => {
-      const promises = transactions?.map(async (item) => {
-        const transaction = await getZkAppTxByHash(item.txHash);
-        return {
-          ...item,
-          status: transaction.txStatus,
-          timestamp: transaction.timestamp,
-        };
-      });
-      if (!promises) return;
-      const newTxs = await Promise.all(promises);
+    // const checkTransaction = async (txHash: string) => {
+    //   const checkTx = async (retryCount = 0) => {
+    //     const maxRetries = 5;
+    //     try {
+    //       const transaction = await getZkAppTxByHash(txHash);
+    //       if (transaction.txStatus) {
+    //         return transaction;
+    //       }
+    //     } catch (error) {
+    //       // console.error(error);
+    //     }
+    //     if (retryCount < maxRetries) {
+    //       await sleep(retryCount * 1000);
+    //       return checkTx(retryCount + 1);
+    //     }
+    //     return null;
+    //   };
 
-      console.log(newTxs);
-      setTxs(newTxs as unknown as Tx[]);
-    };
-    fetchTxs();
+    //   return await checkTx();
+    // };
+
+    // Update each transaction independently
+    transactions.forEach(item => {
+      if (item.status) {
+        return;
+      }
+
+      getZkAppTxByHash(item.txHash)
+        .then(transaction => {
+          if (!transaction) {
+            setTxs(prevTxs =>
+              prevTxs.map(tx =>
+                tx.txHash === item.txHash
+                  ? { ...tx, status: 'Unknown', timestamp: item.createdAt }
+                  : tx
+              )
+            );
+            return;
+          }
+
+          setTxs(prevTxs =>
+            prevTxs.map(tx =>
+              tx.txHash === item.txHash
+                ? { ...tx, status: transaction.txStatus, timestamp: transaction.timestamp }
+                : tx
+            )
+          );
+        })
+        .catch(error => {
+          console.error(error);
+          setTxs(prevTxs =>
+            prevTxs.map(tx =>
+              tx.txHash === item.txHash
+                ? { ...tx, status: 'Unknown', timestamp: Date.parse(item.createdAt) }
+                : tx
+            )
+          );
+        });
+    });
   }, [transactions]);
 
   return (
@@ -59,7 +109,7 @@ export function Transactions() {
           >
             <div className="truncate flex items-center">{formatAddress(transaction.txHash)}</div>
             <div className="flex justify-center">
-              {transaction.status === 'success' && (
+              {transaction.status === 'applied' && (
                 <span className="bg-[#00b708] text-[#212121] px-4 py-1 rounded-[0.2604vw] text-center">
                   Success
                 </span>
@@ -74,8 +124,15 @@ export function Transactions() {
                   Failed
                 </span>
               )}
+              {transaction.status === 'Unknown' && (
+                <span className="bg-[#dc0c07] text-white px-4 py-1 rounded-[0.2604vw] text-center">
+                  Unknown
+                </span>
+              )}
             </div>
-            <div className="text-right flex items-center justify-end">{transaction.timestamp}</div>
+            <div className="text-right flex items-center justify-end">
+              {transaction.timestamp ? getTimeString(transaction.timestamp) : ''}
+            </div>
           </div>
         ))}
       </div>
