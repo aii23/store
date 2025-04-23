@@ -107,7 +107,16 @@ export function Transactions() {
             key={index}
             className="grid grid-cols-3 gap-4 px-[0.7813vw] py-[0.5208vw] bg-[#212121] rounded-xl text-sm text-[#f9f8f4]"
           >
-            <div className="truncate flex items-center">{formatAddress(transaction.txHash)}</div>
+            <div className="truncate flex items-center">
+              <a
+                href={`https://minascan.io/mainnet/tx/${transaction.txHash}?type=zk-tx`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {formatAddress(transaction.txHash, 10)}
+              </a>
+            </div>
             <div className="flex justify-center">
               {transaction.status === 'applied' && (
                 <span className="bg-[#00b708] text-[#212121] px-4 py-1 rounded-[0.2604vw] text-center">
