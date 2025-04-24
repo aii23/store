@@ -1,13 +1,15 @@
 import Image from "next/image";
 import {
   useMinaBalancesStore,
-  useObserveMinaBalance,
 } from "../../../../../lib/stores/minaBalances";
 import { useNetworkStore } from "../../../../../lib/stores/network";
 import {
-  useObserveProtokitBalance,
   useProtokitBalancesStore,
 } from "../../../../../lib/stores/protokitBalances";
+import {
+  useObserveProtokitBalance,
+} from "../../../../../lib/hooks/observe-protokit-balance";
+
 import CoinImg from "../../../../../components/widgets/Header/assets/coin.svg";
 import MinaCoinImg from "../../../../../components/widgets/Header/assets/mina.png";
 import { useContext } from "react";

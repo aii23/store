@@ -97,6 +97,9 @@
     "./lib/stores/minaBalances": "./lib/stores/minaBalances.tsx",
     "./lib/stores/commitmentStorage": "./lib/stores/commitmentStorage.tsx",
     "./lib/stores/boughtModalStore": "./lib/stores/boughtModalStore.tsx",
+    "./lib/hooks/observe-protokit-balance": "./lib/hooks/observe-protokit-balance.tsx",
+    "./lib/hooks/observe-mina-balance": "./lib/hooks/observe-mina-balance.tsx",
+
     "./components/shared/Notification/NotificationsContainer": "./components/shared/Notification/NotificationsContainer.tsx",
     "./components/shared/Notification/lib/notificationStore": "./components/shared/Notification/lib/notificationStore.ts",
     "./components/shared/Loader": "./components/shared/Loader/index.ts",

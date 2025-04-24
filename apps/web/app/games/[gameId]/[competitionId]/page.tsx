@@ -3,6 +3,7 @@ import 'reflect-metadata';
 
 import dynamic from 'next/dynamic';
 import { zkNoidConfig } from '@zknoid/games/config';
+import { useParams } from 'next/navigation';
 
 // import "@zknoid/games/styles.css";
 
@@ -13,17 +14,10 @@ const GamePageWrapper = dynamic(
   }
 );
 
-export default async function Home({
-  params,
-}: {
-  params: Promise<{ competitionId: string; gameId: string }>;
-}) {
-  const { competitionId, gameId } = await params;
+export default function Home({}: {}) {
+  const { competitionId, gameId } = useParams<{ competitionId: string; gameId: string }>();
+
   return (
-    <GamePageWrapper
-      gameId={gameId}
-      competitionId={competitionId}
-      zkNoidConfig={zkNoidConfig}
-    />
+    <GamePageWrapper gameId={gameId} competitionId={competitionId} zkNoidConfig={zkNoidConfig} />
   );
 }
