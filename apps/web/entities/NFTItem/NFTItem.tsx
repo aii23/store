@@ -7,10 +7,12 @@ export default function NFTItem({
   gridMode,
   nft,
   setChoosenID,
+  showMintInfo = true,
 }: {
   gridMode: number;
   nft: NFT;
   setChoosenID: (id: string) => void;
+  showMintInfo?: boolean;
 }) {
   return (
     <div
@@ -47,6 +49,7 @@ export default function NFTItem({
           >
             {nft.name}
           </span>
+
           <span
             className={
               'hidden lg:!inline-block col-span-2 text-foreground text-[0.833vw] leading-[110%] font-plexsans'
@@ -103,46 +106,50 @@ export default function NFTItem({
           >
             {nft.name}
           </span>
-          <span
-            className={cn(
-              'text-foreground',
-              gridMode == 4
-                ? 'lg:!text-[1.042vw] text-[3.294vw] leading-[100%] font-museo font-medium'
-                : gridMode == 6
-                  ? 'lg:!text-[0.729vw] leading-[100%] font-museo font-medium'
-                  : 'lg:!text-[0.833vw] leading-[110%] font-plexsans'
-            )}
-          >
-            {formatUnits(nft.price)} MINA
-          </span>
-          {nft.isMinted ? (
-            <div
-              className={
-                'py-[2.353vw] lg:!py-[0.417vw] flex flex-col items-start justify-center w-full'
-              }
-            >
+          {showMintInfo && (
+            <>
               <span
-                className={
-                  'text-[3.294vw] lg:!text-[0.833vw] font-plexsans leading-[110%] text-left-accent'
-                }
+                className={cn(
+                  'text-foreground',
+                  gridMode == 4
+                    ? 'lg:!text-[1.042vw] text-[3.294vw] leading-[100%] font-museo font-medium'
+                    : gridMode == 6
+                      ? 'lg:!text-[0.729vw] leading-[100%] font-museo font-medium'
+                      : 'lg:!text-[0.833vw] leading-[110%] font-plexsans'
+                )}
               >
-                Already Minted
+                {formatUnits(nft.price)} MINA
               </span>
-            </div>
-          ) : (
-            <div
-              className={
-                'bg-left-accent cursor-pointer hover:opacity-80 py-[1.412vw] lg:!py-[0.417vw] rounded-[1.176vw] lg:!rounded-[0.26vw] flex flex-col items-center justify-center w-full'
-              }
-            >
-              <span
-                className={
-                  'font-museo text-bg-grey font-medium text-[3.765vw] lg:!text-[1.042vw] leading-[100%]'
-                }
-              >
-                Buy
-              </span>
-            </div>
+              {nft.isMinted ? (
+                <div
+                  className={
+                    'py-[2.353vw] lg:!py-[0.417vw] flex flex-col items-start justify-center w-full'
+                  }
+                >
+                  <span
+                    className={
+                      'text-[3.294vw] lg:!text-[0.833vw] font-plexsans leading-[110%] text-left-accent'
+                    }
+                  >
+                    Already Minted
+                  </span>
+                </div>
+              ) : (
+                <div
+                  className={
+                    'bg-left-accent cursor-pointer hover:opacity-80 py-[1.412vw] lg:!py-[0.417vw] rounded-[1.176vw] lg:!rounded-[0.26vw] flex flex-col items-center justify-center w-full'
+                  }
+                >
+                  <span
+                    className={
+                      'font-museo text-bg-grey font-medium text-[3.765vw] lg:!text-[1.042vw] leading-[100%]'
+                    }
+                  >
+                    Buy
+                  </span>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
