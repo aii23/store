@@ -43,7 +43,7 @@ export default function Footer() {
               Games
             </Link>
             <Link
-              href={"/nft"}
+              href={"/nft/collections"}
               className={
                 "text-[0.833vw] font-medium font-museo hover:opacity-80"
               }

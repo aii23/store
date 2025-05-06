@@ -190,7 +190,7 @@ export default function DesktopNavbar({
               },
             ]}
           />
-          <Tab title={"NFT Marketplace"} link={"/nft"} />
+          <Tab title={"NFT Marketplace"} link={"/nft/collections"} />
           <Tab title={"FAQ & Support"} link={"/?widget=faq#faq"} />
           <Tab
             title={"Media"}
