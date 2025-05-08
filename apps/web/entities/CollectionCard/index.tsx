@@ -21,9 +21,10 @@ const mockedCollectionsQuery = {
 
 export default function CollectionCard({ collection }: { collection: ICollection }) {
   const { data: collectionItemsData } = api.http.nft.getCollectionsNFT.useQuery({
-    ...(collection.name == NFTCollectionIDList.Zknoid
-      ? mockedCollectionsQuery.ZkNoid_test
-      : mockedCollectionsQuery.Tileville),
+    collectionName: collection.name,
+    collectionAddress: collection.address,
+    version: `v${collection.source.version}`,
+    indexName: collection.source.indexName,
     page: 1,
     hitsPerPage: 5,
   });
