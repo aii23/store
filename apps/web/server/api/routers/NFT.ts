@@ -119,7 +119,7 @@ const getNFTs = async (
 
   return {
     nfts:
-      tokenList?.hits.map((hit) => {
+      tokenList?.hits.map(hit => {
         return {
           id: hit.tokenId,
           name: hit.name,
@@ -150,7 +150,7 @@ const getV2Collections = async (source: ISourceData): Promise<ICollection[]> => 
 
   if (!result) return [];
 
-  return result.facetHits.map((hit) => {
+  return result.facetHits.map(hit => {
     return {
       name: hit.value,
       count: hit.count,
@@ -170,7 +170,7 @@ const getV2NFTs = async (
 };
 
 const getUserV2NFTs = async (address: string, page: number, hitsPerPage?: number) => {
-  const v2Indexes = indexes.filter((v) => v.version === 2).map((v) => v.indexName);
+  const v2Indexes = indexes.filter(v => v.version === 2).map(v => v.indexName);
 
   let result: NFT[] = [];
 
@@ -201,7 +201,7 @@ const getV3Collections = async (source: ISourceData): Promise<ICollection[]> => 
 
   const tokenList = result?.hits ? (result as unknown as AlgoliaCollectionList) : undefined;
 
-  return tokenList!.hits.map((hit) => {
+  return tokenList!.hits.map(hit => {
     return {
       name: hit.collectionName,
       count: 1,
@@ -227,7 +227,7 @@ const getV3NFTs = async (
 };
 
 const getUserV3NFTs = async (address: string, page: number, hitsPerPage?: number) => {
-  const v2Indexes = indexes.filter((v) => v.version === 3).map((v) => v.indexName);
+  const v2Indexes = indexes.filter(v => v.version === 3).map(v => v.indexName);
 
   let result: NFT[] = [];
 

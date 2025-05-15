@@ -36,6 +36,7 @@ import { algoliasearch } from 'algoliasearch';
 import TxStore from '../../TxStore';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { api } from '../../../../../../../apps/web/trpc/react';
 
 const client = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_PROJECT || '',
@@ -81,6 +82,16 @@ export default function AccountPopup({
   const notificationStore = useNotificationStore();
   const { account } = useContext(SetupStoreContext);
   const router = useRouter();
+  const { data: nfts } = api.http.nft.getUserNFTs.useQuery(
+    {
+      address: networkStore.address!,
+      page: 0,
+      hitsPerPage: 100,
+    },
+    {
+      enabled: !!networkStore.address,
+    }
+  );
 
   const [linkCopied, setLinkCopied] = useState<boolean>(false);
   const [name, setName] = useState<string | undefined>(undefined);
@@ -117,6 +128,14 @@ export default function AccountPopup({
   //   console.log("Search source", search);
   // }, []);
 
+  // Add nft avatars to the list
+  useEffect(() => {
+    if (nfts) {
+      const nftAvatars = nfts.map(nft => nft.image);
+      setAvatars([...avatars, ...nftAvatars]);
+    }
+  }, [nfts]);
+
   useEffect(() => {
     if (account.name != name) setName(account.name);
     if (account.avatarId != avatarId) setAvatarId(account.avatarId);
@@ -149,7 +168,7 @@ export default function AccountPopup({
       .then(() => {
         console.log('Wallet disconnected');
       })
-      .catch((err) => {
+      .catch(err => {
         console.log('Error while disconnect', err);
       });
     setIsAccountOpen(false);
@@ -318,11 +337,11 @@ export default function AccountPopup({
               <Formik
                 initialValues={{ name: name || '' }}
                 validationSchema={validateSchema}
-                onSubmit={(values) => submitForm(values.name)}
+                onSubmit={values => submitForm(values.name)}
               >
                 {({ errors, touched, values }) => (
                   <Form
-                    onChange={(e) => {
+                    onChange={e => {
                       // @ts-ignore
                       setTestName(e.target.value);
                     }}
