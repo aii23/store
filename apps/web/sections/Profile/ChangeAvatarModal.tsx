@@ -25,7 +25,8 @@ import Image from 'next/image';
 import { api } from '../../trpc/react';
 import { useNetworkStore } from '@zknoid/sdk/lib/stores/network';
 import { useNotificationStore } from '@zknoid/sdk/components/shared/Notification/lib/notificationStore';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import SetupStoreContext from '../../../../packages/sdk/lib/contexts/SetupStoreContext';
 const zknoidAvatars = [
   avatar1,
   avatar2,
@@ -99,6 +100,8 @@ export default function ChangeAvatarModal({
   const { mutate: setAvatarId } = api.http.accounts.setAvatar.useMutation();
 
   const [avatars, setAvatars] = useState<string[]>(zknoidAvatars);
+
+  const { refetchAccountData } = useContext(SetupStoreContext);
 
   const { data: nfts } = api.http.nft.getUserNFTs.useQuery(
     {
@@ -204,15 +207,29 @@ export default function ChangeAvatarModal({
             className="w-full h-[2.5vw] bg-[#B58BE5] items-center justify-center"
             onClick={() => {
               if (!networkStore.address) return;
-              setAvatarId({
-                userAddress: networkStore.address,
-                avatarId: selectedAvatarId || 0,
-              });
-              onClose(selectedAvatarId || 0);
+              const avatarId = selectedAvatarId || 0;
+
+              if (avatarId >= zknoidAvatars.length) {
+                setAvatarId({
+                  userAddress: networkStore.address,
+                  avatarId: undefined,
+                  avatarUrl: avatars[avatarId - 1],
+                });
+              } else {
+                setAvatarId({
+                  userAddress: networkStore.address,
+                  avatarId: avatarId,
+                  avatarUrl: undefined,
+                });
+              }
+              setTimeout(() => {
+                refetchAccountData?.();
+              }, 100);
               notificationStore.create({
                 type: 'success',
                 message: 'Avatar changed!',
               });
+              onClose(selectedAvatarId || 0);
             }}
           >
             <span className="text-[#212121]">Save changes</span>

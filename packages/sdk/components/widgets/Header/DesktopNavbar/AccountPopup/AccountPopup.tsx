@@ -80,7 +80,7 @@ export default function AccountPopup({
   const networkStore = useNetworkStore();
   const bridgeStore = useBridgeStore();
   const notificationStore = useNotificationStore();
-  const { account } = useContext(SetupStoreContext);
+  const { account, refetchAccountData } = useContext(SetupStoreContext);
   const router = useRouter();
   const { data: nfts } = api.http.nft.getUserNFTs.useQuery(
     {
@@ -98,6 +98,7 @@ export default function AccountPopup({
   const [testName, setTestName] = useState<string>('');
   const [changeNameMode, setChangeNameMode] = useState<boolean>(false);
   const [avatarId, setAvatarId] = useState<number | undefined>(undefined);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [avatarMode, setAvatarMode] = useState<boolean>(false);
   const [avatars, setAvatars] = useState(zknoidAvatars);
   const [isTxStoreOpen, setIsTxStoreOpen] = useState<boolean>(false);
@@ -139,7 +140,8 @@ export default function AccountPopup({
   useEffect(() => {
     if (account.name != name) setName(account.name);
     if (account.avatarId != avatarId) setAvatarId(account.avatarId);
-  }, [account.name, account.avatarId]);
+    if (account.avatarUrl != avatarUrl) setAvatarUrl(account.avatarUrl);
+  }, [account.name, account.avatarId, account.avatarUrl]);
 
   useEffect(() => {
     if (bridgeStore.open) setIsAccountOpen(false);
@@ -291,7 +293,16 @@ export default function AccountPopup({
                         return;
                       }
                       setAvatarId(index);
-                      account.avatarIdMutator?.(index);
+
+                      console.log('index', index, item);
+                      if (index >= zknoidAvatars.length) {
+                        account.avatarIdMutator?.(index, item);
+                      } else {
+                        account.avatarIdMutator?.(index);
+                      }
+                      setTimeout(() => {
+                        refetchAccountData?.();
+                      }, 100);
                       setAvatarMode(false);
                       notificationStore.create({
                         type: 'success',
@@ -326,7 +337,7 @@ export default function AccountPopup({
         <div className={'mt-8 flex w-full flex-col gap-4'}>
           <div className={'flex flex-row gap-[0.521vw]'}>
             <Image
-              src={avatarId !== undefined ? avatars[avatarId] : avatars[0]}
+              src={avatarUrl ? avatarUrl : avatarId !== undefined ? avatars[avatarId] : avatars[0]}
               alt={'User Avatar'}
               className={'h-[5vw] w-[5vw] cursor-pointer hover:opacity-80'}
               onClick={() => (avatarMode ? undefined : setAvatarMode(true))}

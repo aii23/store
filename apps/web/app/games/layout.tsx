@@ -42,9 +42,11 @@ export default function Layout({ children }: { children: ReactNode }) {
   const sendTicketQueueMutation = api.http.giftCodes.sendTicketQueue.useMutation();
   const getRoundsInfosQuery = api.http.lotteryBackend.getRoundInfos;
 
-  const accountData = api.http.accounts.getAccount.useQuery({
+  const accountDataQuery = api.http.accounts.getAccount.useQuery({
     userAddress: networkStore.address || '',
-  }).data;
+  });
+  const accountData = accountDataQuery.data;
+  const refetchAccountData = accountDataQuery.refetch;
   const nameMutator = api.http.accounts.setName.useMutation();
   const avatarIdMutator = api.http.accounts.setAvatar.useMutation();
 
@@ -89,26 +91,29 @@ export default function Layout({ children }: { children: ReactNode }) {
         account: {
           name: accountData?.account?.name,
           avatarId: accountData?.account?.avatarId,
-          nameMutator: (name) =>
+          avatarUrl: accountData?.account?.avatarUrl,
+          nameMutator: name =>
             nameMutator.mutate({
               userAddress: networkStore.address || '',
               name: name,
             }),
-          avatarIdMutator: (avatarId) =>
+          avatarIdMutator: (avatarId, avatarUrl) =>
             avatarIdMutator.mutate({
               userAddress: networkStore.address || '',
               avatarId: avatarId,
+              avatarUrl: avatarUrl,
             }),
         },
+        refetchAccountData: refetchAccountData,
         ratings: {
-          gameFeedbackMutator: (feedback) =>
+          gameFeedbackMutator: feedback =>
             gameFeedbackMutator.mutate({
               userAddress: feedback.userAddress,
               gameId: feedback.gameId,
               feedback: feedback.feedbackText,
               rating: feedback.rating,
             }),
-          getGameRatingQuery: (gameId) =>
+          getGameRatingQuery: gameId =>
             (getGameIdQuery.useQuery({ gameId: gameId })?.data?.rating as Record<number, number>) ||
             undefined,
         },
@@ -150,15 +155,15 @@ export default function Layout({ children }: { children: ReactNode }) {
             (getRoundsInfosQuery.useQuery(
               {
                 roundIds: !oneDay
-                  ? roundsIds.map((roundId) => roundId - LOTTERY_ROUND_OFFSET)
+                  ? roundsIds.map(roundId => roundId - LOTTERY_ROUND_OFFSET)
                   : roundsIds,
                 oneDay: oneDay,
               },
               params
             )?.data as Record<number, ILotteryRound>) || undefined,
-          addGiftCodesMutation: (giftCodes) => addGiftCodesMutation.mutate(giftCodes),
-          addClaimRequestMutation: (claim) => addClaimRequestMutation.mutate(claim),
-          sendTicketQueueMutation: (ticketQueue) =>
+          addGiftCodesMutation: giftCodes => addGiftCodesMutation.mutate(giftCodes),
+          addClaimRequestMutation: claim => addClaimRequestMutation.mutate(claim),
+          sendTicketQueueMutation: ticketQueue =>
             sendTicketQueueMutation.mutate({
               userAddress: ticketQueue.userAddress,
               giftCode: ticketQueue.giftCode,
