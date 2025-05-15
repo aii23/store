@@ -9,9 +9,11 @@ import { api } from '../../trpc/react';
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
   const networkStore = useNetworkStore();
-  const accountData = api.http.accounts.getAccount.useQuery({
+  const accountDataQuery = api.http.accounts.getAccount.useQuery({
     userAddress: networkStore.address || '',
-  }).data;
+  });
+  const refetchAccountData = accountDataQuery.refetch;
+  const accountData = accountDataQuery.data;
   const nameMutator = api.http.accounts.setName.useMutation();
   const avatarIdMutator = api.http.accounts.setAvatar.useMutation();
   const gameFeedbackMutator = api.http.ratings.setGameFeedback.useMutation();
@@ -32,26 +34,29 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
         account: {
           name: accountData?.account?.name,
           avatarId: accountData?.account?.avatarId,
-          nameMutator: (name) =>
+          avatarUrl: accountData?.account?.avatarUrl,
+          nameMutator: name =>
             nameMutator.mutate({
               userAddress: networkStore.address || '',
               name: name,
             }),
-          avatarIdMutator: (avatarId) =>
+          avatarIdMutator: (avatarId, avatarUrl) =>
             avatarIdMutator.mutate({
               userAddress: networkStore.address || '',
               avatarId: avatarId,
+              avatarUrl: avatarUrl,
             }),
         },
+        refetchAccountData: refetchAccountData,
         ratings: {
-          gameFeedbackMutator: (feedback) =>
+          gameFeedbackMutator: feedback =>
             gameFeedbackMutator.mutate({
               userAddress: feedback.userAddress,
               gameId: feedback.gameId,
               feedback: feedback.feedbackText,
               rating: feedback.rating,
             }),
-          getGameRatingQuery: (gameId) =>
+          getGameRatingQuery: gameId =>
             (getGameIdQuery.useQuery({ gameId: gameId })?.data?.rating as Record<number, number>) ||
             undefined,
         },

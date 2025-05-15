@@ -16,6 +16,8 @@ export default function AccountCard({
 }) {
   const { account } = useContext(SetupStoreContext);
 
+  console.log('account!!!!', account);
+
   return (
     <div
       className={'flex flex-row gap-[0.521vw] items-center cursor-pointer'}
@@ -27,7 +29,11 @@ export default function AccountCard({
         }
       >
         <Image
-          src={`/image/avatars/avatar-${account.avatarId || 'unset'}.svg`}
+          src={
+            account.avatarUrl
+              ? account.avatarUrl
+              : `/image/avatars/avatar-${account.avatarId || 'unset'}.svg`
+          }
           alt={'Profile Image'}
           width={43}
           height={43}

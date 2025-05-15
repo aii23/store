@@ -36,6 +36,7 @@ import { algoliasearch } from 'algoliasearch';
 import TxStore from '../../TxStore';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { api } from '../../../../../../../apps/web/trpc/react';
 
 const client = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_PROJECT || '',
@@ -79,14 +80,25 @@ export default function AccountPopup({
   const networkStore = useNetworkStore();
   const bridgeStore = useBridgeStore();
   const notificationStore = useNotificationStore();
-  const { account } = useContext(SetupStoreContext);
+  const { account, refetchAccountData } = useContext(SetupStoreContext);
   const router = useRouter();
+  const { data: nfts } = api.http.nft.getUserNFTs.useQuery(
+    {
+      address: networkStore.address!,
+      page: 0,
+      hitsPerPage: 100,
+    },
+    {
+      enabled: !!networkStore.address,
+    }
+  );
 
   const [linkCopied, setLinkCopied] = useState<boolean>(false);
   const [name, setName] = useState<string | undefined>(undefined);
   const [testName, setTestName] = useState<string>('');
   const [changeNameMode, setChangeNameMode] = useState<boolean>(false);
   const [avatarId, setAvatarId] = useState<number | undefined>(undefined);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [avatarMode, setAvatarMode] = useState<boolean>(false);
   const [avatars, setAvatars] = useState(zknoidAvatars);
   const [isTxStoreOpen, setIsTxStoreOpen] = useState<boolean>(false);
@@ -117,10 +129,19 @@ export default function AccountPopup({
   //   console.log("Search source", search);
   // }, []);
 
+  // Add nft avatars to the list
+  useEffect(() => {
+    if (nfts) {
+      const nftAvatars = nfts.map(nft => nft.image);
+      setAvatars([...avatars, ...nftAvatars]);
+    }
+  }, [nfts]);
+
   useEffect(() => {
     if (account.name != name) setName(account.name);
     if (account.avatarId != avatarId) setAvatarId(account.avatarId);
-  }, [account.name, account.avatarId]);
+    if (account.avatarUrl != avatarUrl) setAvatarUrl(account.avatarUrl);
+  }, [account.name, account.avatarId, account.avatarUrl]);
 
   useEffect(() => {
     if (bridgeStore.open) setIsAccountOpen(false);
@@ -149,7 +170,7 @@ export default function AccountPopup({
       .then(() => {
         console.log('Wallet disconnected');
       })
-      .catch((err) => {
+      .catch(err => {
         console.log('Error while disconnect', err);
       });
     setIsAccountOpen(false);
@@ -272,7 +293,16 @@ export default function AccountPopup({
                         return;
                       }
                       setAvatarId(index);
-                      account.avatarIdMutator?.(index);
+
+                      console.log('index', index, item);
+                      if (index >= zknoidAvatars.length) {
+                        account.avatarIdMutator?.(index, item);
+                      } else {
+                        account.avatarIdMutator?.(index);
+                      }
+                      setTimeout(() => {
+                        refetchAccountData?.();
+                      }, 100);
                       setAvatarMode(false);
                       notificationStore.create({
                         type: 'success',
@@ -307,7 +337,7 @@ export default function AccountPopup({
         <div className={'mt-8 flex w-full flex-col gap-4'}>
           <div className={'flex flex-row gap-[0.521vw]'}>
             <Image
-              src={avatarId !== undefined ? avatars[avatarId] : avatars[0]}
+              src={avatarUrl ? avatarUrl : avatarId !== undefined ? avatars[avatarId] : avatars[0]}
               alt={'User Avatar'}
               className={'h-[5vw] w-[5vw] cursor-pointer hover:opacity-80'}
               onClick={() => (avatarMode ? undefined : setAvatarMode(true))}
@@ -318,11 +348,11 @@ export default function AccountPopup({
               <Formik
                 initialValues={{ name: name || '' }}
                 validationSchema={validateSchema}
-                onSubmit={(values) => submitForm(values.name)}
+                onSubmit={values => submitForm(values.name)}
               >
                 {({ errors, touched, values }) => (
                   <Form
-                    onChange={(e) => {
+                    onChange={e => {
                       // @ts-ignore
                       setTestName(e.target.value);
                     }}
