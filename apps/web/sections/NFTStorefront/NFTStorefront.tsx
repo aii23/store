@@ -20,19 +20,6 @@ import { motion } from 'framer-motion';
 import Search from './Search';
 import { useSearchParams } from 'next/navigation';
 
-const mockedCollectionsQuery = {
-  ZkNoid_test: {
-    version: 'v3',
-    indexName: 'standard-devnet',
-    collectionAddress: 'B62qpqH2ae7wrAzvBH31sacj9yTeCvMhz5Hx8obfm9onQrBwBeTkKVE',
-  },
-  Tileville: {
-    version: 'v2',
-    indexName: 'mainnet',
-    collectionName: 'Tileville',
-  },
-};
-
 enum PriceFilter {
   LowToHigh = 'low-to-high',
   HighToLow = 'high-to-low',
@@ -73,7 +60,7 @@ const NFTStorefrontWithSuspense = ({
   setGridMode: (value: 1 | 4 | 6) => void;
 }) => {
   const params = useSearchParams();
-  const [page, setPage] = useState<number>(1);
+  const [page, setPage] = useState<number>(0);
   const [choosenNFTID, setChoosenNFTID] = useState<string | undefined>(undefined);
   const [hasMore, setHasMore] = useState(false);
   const [collectionItems, setCollectionItems] = useState<NFT[] | undefined>(undefined);
@@ -87,9 +74,9 @@ const NFTStorefrontWithSuspense = ({
   const collectionName = params.get('collection');
 
   const { data: collectionItemsData, isLoading } = api.http.nft.getCollectionsNFT.useQuery({
-    ...(collectionID == NFTCollectionIDList.Zknoid
-      ? mockedCollectionsQuery.ZkNoid_test
-      : mockedCollectionsQuery.Tileville),
+    version: 'v2',
+    indexName: 'mainnet',
+    collectionName: collectionName as string,
     page: page,
     hitsPerPage: 20,
   });
@@ -102,7 +89,7 @@ const NFTStorefrontWithSuspense = ({
 
   useEffect(() => {
     setCollectionItems([]);
-    setPage(1);
+    setPage(0);
     setHasMore(false);
   }, [collectionID]);
 
@@ -121,12 +108,14 @@ const NFTStorefrontWithSuspense = ({
   useEffect(() => {
     // if (searchedItems && searchedItems.length != 0) return;
 
+    console.log('Data');
+    console.log(collectionItemsData);
     if (!collectionItemsData || !('nfts' in collectionItemsData)) return;
 
-    if (page === 1) {
+    if (page === 0) {
       setCollectionItems(collectionItemsData.nfts);
     } else {
-      setCollectionItems((prev) => [...(prev || []), ...collectionItemsData.nfts]);
+      setCollectionItems(prev => [...(prev || []), ...collectionItemsData.nfts]);
     }
   }, [collectionItemsData, page]);
 
@@ -165,7 +154,7 @@ const NFTStorefrontWithSuspense = ({
       >
         <Select
           value={collectionID}
-          onValueChange={(value) => setCollectionID(value as NFTCollectionIDList)}
+          onValueChange={value => setCollectionID(value as NFTCollectionIDList)}
         >
           <SelectTriggerPick className="lg:!col-span-4">
             <span>Collection: </span>
@@ -179,11 +168,11 @@ const NFTStorefrontWithSuspense = ({
           </SelectContent>
         </Select>
         <Search
-          collection={
-            collectionID === NFTCollectionIDList.Zknoid
-              ? mockedCollectionsQuery.ZkNoid_test
-              : mockedCollectionsQuery.Tileville
-          }
+          collection={{
+            version: 'v2',
+            indexName: 'mainnet',
+            collectionName: collectionName as string,
+          }}
           setSearchedItems={setSearchedItems}
           setSearchedMeta={setSearchedMeta}
           setSearchStatus={setSearchStatus}
@@ -405,8 +394,8 @@ const NFTStorefrontWithSuspense = ({
         <NFTDetailsModal
           nft={
             searchedItems && searchedItems.length != 0
-              ? searchedItems.find((item) => item.raw.address === choosenNFTID)
-              : collectionItems && collectionItems.find((item) => item.raw.address === choosenNFTID)
+              ? searchedItems.find(item => item.raw.address === choosenNFTID)
+              : collectionItems && collectionItems.find(item => item.raw.address === choosenNFTID)
           }
           isOpen={choosenNFTID != undefined}
           onClose={() => setChoosenNFTID(undefined)}

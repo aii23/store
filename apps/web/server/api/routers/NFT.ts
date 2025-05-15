@@ -26,11 +26,11 @@ const indexes: ISourceData[] = [
   //   indexName: "standard-zeko",
   //   version: 3,
   // },
-  {
-    name: 'devnetV3',
-    indexName: 'standard-devnet',
-    version: 3,
-  },
+  // {
+  //   name: 'devnetV3',
+  //   indexName: 'standard-devnet',
+  //   version: 3,
+  // },
 ];
 
 export interface AlgoliaCollectionList {
