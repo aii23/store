@@ -7,11 +7,5 @@
         { "key": "Cross-Origin-Embedder-Policy", "value": "require-corp" }
       ]
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/trpc/http.memetokens.updateLeaderboardInfo",
-      "schedule": "*/5 * * * *"
-    }
   ]
 }
